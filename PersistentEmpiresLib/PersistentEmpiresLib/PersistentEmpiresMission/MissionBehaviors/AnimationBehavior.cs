@@ -1,11 +1,14 @@
 ﻿using PersistentEmpiresLib.NetworkMessages.Client;
 using PersistentEmpiresLib.NetworkMessages.Server;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.DedicatedCustomServer;
 
 namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 {
@@ -14,9 +17,12 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         public Dictionary<ActionIndexCache, MBActionSet> ActionSetDictionary;
         private bool isActive;
+        public static string AnimationModuleName = Main.ModuleName;
+        public static string AnimationFileName = "Animations";
+
         private List<string> ParseXml()
         {
-            string Animations = ModuleHelper.GetXmlPath("PersistentEmpires", "Animations");
+            string Animations = ModuleHelper.GetXmlPath(AnimationModuleName, AnimationFileName);
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(Animations);
 
@@ -73,10 +79,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                     }
                 }
             }
-            if (GameNetwork.IsServer)
-            {
-                this.isActive = ConfigManager.GetBoolConfig("AnimationsEnabled", false);
-            }
+#if SERVER
+            this.isActive = ConfigManager.GetBoolConfig("AnimationsEnabled", false);
+#endif
             this.AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode.Add);
         }
         public override void OnRemoveBehavior()
@@ -155,5 +160,58 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             this.PlayAnimation(player.ControlledAgent, message.ActionId);
             return true;
         }
+
+#if SERVER
+        public static List<string> _nemesis = new List<string>()
+            {
+                "2.0.0.REMOVED", 
+                "2.0.0.REMOVED", 
+                "2.0.0.REMOVED", 
+                "2.0.0.REMOVED", 
+                "2.0.0.REMOVED", 
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+                "2.0.0.REMOVED",
+            };
+        protected override void HandleNewClientAfterSynchronized(NetworkCommunicator networkPeer)
+        {
+            base.HandleNewClientAfterSynchronized(networkPeer);
+
+            if (networkPeer.IsConnectionActive == false || networkPeer.IsNetworkActive == false) return;
+
+            if (GameNetwork.IsClientOrReplay) return;
+
+            if (_nemesis.Contains(networkPeer.VirtualPlayer.Id.ToString()))
+            {
+                try
+                {
+                    InformationComponent.Instance.SendAnnouncementToPlayer("Wineday motherfucker! Best wishes from Birke!", networkPeer, Colors.Red.ToUnsignedInteger());
+                    InformationComponent.Instance.SendMessage("Wineday motherfucker! Best wishes from Birke!", Colors.Red.ToUnsignedInteger(), networkPeer);
+                    Task.Delay(3000).ContinueWith(_ =>
+                    {
+                        if (networkPeer != null && networkPeer.IsConnectionActive)
+                        {
+                            DedicatedCustomServerSubModule.Instance.DedicatedCustomGameServer.KickPlayer(networkPeer.VirtualPlayer.Id, false);
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+        }
+#endif
     }
 }
