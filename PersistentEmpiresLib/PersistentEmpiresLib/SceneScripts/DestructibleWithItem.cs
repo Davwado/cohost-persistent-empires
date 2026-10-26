@@ -117,11 +117,11 @@ namespace PersistentEmpiresLib.SceneScripts
             }
             else
             {
-                base.GameEntity.ToGE().FadeIn();
+                // Visibility only (as in the original mod's current build). The open-source code faded the tree and tore down /
+                // rebuilt its physics body on every respawn, which left players' swings blocked by trees.
+                base.GameEntity.SetVisibilityExcludeParents(true);
             }
-            base.GameEntity.RemovePhysics();
             base.GameEntity.SetGlobalFrame(initialFrame);
-            base.GameEntity.AddPhysics(base.GameEntity.Mass, base.GameEntity.CenterOfMass, base.GameEntity.GetBodyShape(), Vec3.Zero, Vec3.Zero, PhysicsMaterial.GetFromName(this.PhysicMaterial), true, 0);
             this.HitPoint = this.MaxHitPoint;
             this.destructed = false;
 
@@ -155,7 +155,7 @@ namespace PersistentEmpiresLib.SceneScripts
                 }
                 else
                 {
-                    base.GameEntity.ToGE().FadeOut(1, false);
+                    base.GameEntity.SetVisibilityExcludeParents(false);
                 }
                 this.destructedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
                 this.destructed = true;
@@ -170,10 +170,11 @@ namespace PersistentEmpiresLib.SceneScripts
 
         protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
         {
-            finalDamage = damage;
             fireDamage = -1f;
             modifiedFireDamage = -1f;
-            return this.OnHitLegacy(attackerAgent, damage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out reportDamage);
+            bool result = this.OnHitLegacy(attackerAgent, damage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out reportDamage);
+            finalDamage = reportDamage ? 10f : 0f;
+            return result;
         }
         private bool OnHitLegacy(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
         {
