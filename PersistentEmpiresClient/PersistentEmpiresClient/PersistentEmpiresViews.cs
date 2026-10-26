@@ -13,12 +13,12 @@ namespace PersistentEmpires.Views
     [ViewCreatorModule]
     public class PersistentEmpireViews
     {
-        [ViewMethod("PersistentEmpires")]
+        [ViewMethod(Main.GameTypeName)]
         public static MissionView[] OpenPersistentEmpires(Mission mission)
         {
             List<MissionView> list = new List<MissionView>();
             list.Add(MultiplayerViewCreator.CreateMissionServerStatusUIHandler());
-            list.Add(new PEEscapeMenu(Main.ModuleName));
+            list.Add(new PEEscapeMenu(Main.GameTypeName));
             list.Add(ViewCreator.CreateOptionsUIHandler());
             list.Add(ViewCreator.CreateMissionBoundaryCrossingView());
             list.Add(ViewCreator.CreateMissionMainAgentEquipDropView(mission));

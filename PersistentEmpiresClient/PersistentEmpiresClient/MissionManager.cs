@@ -12,7 +12,7 @@ namespace PersistentEmpiresClient
         [MissionMethod]
         public static void OpenPersistentEmpires(string scene)
         {
-            MissionState.OpenNew(Main.ModuleName, new MissionInitializerRecord(scene), delegate (Mission missionController)
+            MissionState.OpenNew(Main.GameTypeName, new MissionInitializerRecord(scene), delegate (Mission missionController)
             {
                 return new MissionBehavior[]
                 {

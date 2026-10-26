@@ -4,7 +4,11 @@ namespace PersistentEmpiresLib
 {
     public class Main : MBSubModuleBase
     {
-        public static readonly string ModuleName = "PersistentEmpires";
+        // Module id: the folder under Modules/ and the id in SubModule.xml. Config, XML data and the module-list check use it.
+        public const string ModuleName = "CoHostPersistentEmpires";
+        // Game type / mission name: what servers put in their config ("GameType PersistentEmpires"), what the game-type strings
+        // (str_multiplayer_game_type.PersistentEmpires) are keyed by, and the name the mission and its views are registered under.
+        public const string GameTypeName = "PersistentEmpires";
         public delegate bool IsAdminDelegate(NetworkCommunicator player);
         public static IsAdminDelegate IsAdminFunc { get; set; }
 

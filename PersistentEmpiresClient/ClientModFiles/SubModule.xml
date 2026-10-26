@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Module>
-	<Name value="PersistentEmpires" />
-	<Id value="PersistentEmpires" />
+	<Name value="CoHost Persistent Empires" />
+	<Id value="CoHostPersistentEmpires" />
 	<Version value="v1.3.1.2" />
 	<ModuleCategory value="Multiplayer" />
 	<DependedModules>
