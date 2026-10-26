@@ -4,7 +4,7 @@ using TaleWorlds.MountAndBlade.Network.Messages;
 
 namespace PersistentEmpiresLib.NetworkMessages.Server
 {
-    [DefineGameNetworkMessageTypeForMod(GameNetworkMessageSendType.FromServer)]
+    // (attribute removed: not part of the Workshop build's message set)
     public sealed class PlayerIsTypingMessageServer : GameNetworkMessage
     {
         public NetworkCommunicator Sender;

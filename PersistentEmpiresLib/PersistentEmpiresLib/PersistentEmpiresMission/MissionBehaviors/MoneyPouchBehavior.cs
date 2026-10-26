@@ -124,7 +124,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         private void DropMoney(MatrixFrame frame, int amount)
         {
-            PE_MoneyBag moneyBag = (PE_MoneyBag)base.Mission.CreateMissionObjectFromPrefab("pe_moneybag", frame);
+            PE_MoneyBag moneyBag = (PE_MoneyBag)base.Mission.CreateMissionObjectFromPrefab("pe_moneybag", frame, false, 0f, null);
             this.MoneyBagCreatedAt[moneyBag] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             moneyBag.SetAmount(amount);
 

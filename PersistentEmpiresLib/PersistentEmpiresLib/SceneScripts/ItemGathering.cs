@@ -37,14 +37,14 @@ namespace PersistentEmpiresLib.SceneScripts
         private int CurrentCount = 0;
         private ItemObject DropsItemObject;
 
-        protected override bool LockUserFrames
+        public override bool LockUserFrames
         {
             get
             {
                 return false;
             }
         }
-        protected override bool LockUserPositions
+        public override bool LockUserPositions
         {
             get
             {
@@ -162,7 +162,7 @@ namespace PersistentEmpiresLib.SceneScripts
             userAgent.ClearTargetFrame();
         }
 
-        public override void OnUse(Agent userAgent)
+        public override void OnUse(Agent userAgent, sbyte agentBoneIndex)
         {
             if (GameNetwork.IsServer)
             {
@@ -180,7 +180,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     userAgent.StopUsingGameObjectMT(false);
                     return;
                 }
-                EquipmentIndex wieldedItemIndex = userAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+                EquipmentIndex wieldedItemIndex = userAgent.GetPrimaryWieldedItemIndex();
                 // MissionWeapon wieldedItem = userAgent.Equipment[wieldedItemIndex];
                 if (this.NeededItem == "" && wieldedItemIndex != EquipmentIndex.None)
                 {
@@ -232,7 +232,7 @@ namespace PersistentEmpiresLib.SceneScripts
             this.UseWillEndAt = this.UseStartedAt + this.AnimationDurationInSeconds;
             if (this.RotateWhenUsage)
             {
-                GameEntity entity = base.GameEntity.GetFirstChildEntityWithTag(this.LookPointTag);
+                WeakGameEntity entity = base.GameEntity.GetFirstChildEntityWithTag(this.LookPointTag);
                 GameEntityWithWorldPosition gameEntityWithWorldPosition = new GameEntityWithWorldPosition(entity);
                 WorldFrame userFrameLook = gameEntityWithWorldPosition.WorldFrame;
                 WorldFrame userFrameForAgent = this.GetUserFrameForAgent(userAgent);
@@ -246,9 +246,13 @@ namespace PersistentEmpiresLib.SceneScripts
             {
                 PEInformationManager.StartCounter("Gathering " + this.DropsItemObject.Name.ToString() + "...", this.AnimationDurationInSeconds);
             }
-            base.OnUse(userAgent);
+            base.OnUse(userAgent, agentBoneIndex);
         }
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return "Item Gathering";
         }

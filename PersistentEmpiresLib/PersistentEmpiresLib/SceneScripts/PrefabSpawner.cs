@@ -106,24 +106,28 @@ namespace PersistentEmpiresLib.SceneScripts
             base.DescriptionMessage = descriptionMessage;
             this.SpawnableItems = new List<SpawnableItem>();
             this.LoadSpawnableItems();
-            this.SpawningPoint = base.GameEntity.GetFirstChildEntityWithTag(this.SpawnPointTag);
+            this.SpawningPoint = base.GameEntity.GetFirstChildEntityWithTag(this.SpawnPointTag).ToGE();
             this.SpawnedPrefabs = new List<GameEntity>();
             this.StrayEntity = new Dictionary<GameEntity, IStray>();
         }
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return "Siege Workshop";
         }
 
-        public override void OnUse(Agent userAgent)
+        public override void OnUse(Agent userAgent, sbyte agentBoneIndex)
         {
-            base.OnUse(userAgent);
+            base.OnUse(userAgent, agentBoneIndex);
             userAgent.StopUsingGameObjectMT(true);
             if (GameNetwork.IsServer)
             {
                 Debug.Print("[USING LOG] AGENT USE " + this.GetType().Name);
 
-                EquipmentIndex equipmentIndex = userAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+                EquipmentIndex equipmentIndex = userAgent.GetPrimaryWieldedItemIndex();
                 if (equipmentIndex == EquipmentIndex.None)
                 {
                     this.DespawnNearest(userAgent);
@@ -150,7 +154,7 @@ namespace PersistentEmpiresLib.SceneScripts
 
         private void SpawnSpawnableItem(Agent userAgent, SpawnableItem spawnableItem)
         {
-            EquipmentIndex equipmentIndex = userAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+            EquipmentIndex equipmentIndex = userAgent.GetPrimaryWieldedItemIndex();
             userAgent.RemoveEquippedWeapon(equipmentIndex);
 
             MatrixFrame spawnFrame = this.SpawningPoint.GetGlobalFrame();
@@ -158,22 +162,22 @@ namespace PersistentEmpiresLib.SceneScripts
 
             MatrixFrame adjSpawnFrame = new MatrixFrame(spawnFrame.rotation, vecspawnFrame);
 
-            MissionObject mObject = Mission.Current.CreateMissionObjectFromPrefab(spawnableItem.PrefabName, adjSpawnFrame);
+            MissionObject mObject = Mission.Current.CreateMissionObjectFromPrefab(spawnableItem.PrefabName, adjSpawnFrame, false, 0f, null);
 
-            this.SpawnedPrefabs.Add(mObject.GameEntity);
+            this.SpawnedPrefabs.Add(mObject.GameEntity.ToGE());
 
             LoggerHelper.LogAnAction(userAgent.MissionPeer.GetNetworkPeer(), LogAction.PlayerSpawnedPrefab, null, new object[] {
                 spawnableItem
             });
 
             // Initiate all mObject childrens
-            List<GameEntity> childrens = new List<GameEntity>();
+            List<WeakGameEntity> childrens = new List<WeakGameEntity>();
 
             ScriptComponentBehavior[] spawnablesRoot = mObject.GameEntity.GetScriptComponents().Where(s => s is ISpawnable).ToArray();
             foreach (ISpawnable spawnable in spawnablesRoot) spawnable.OnSpawnedByPrefab(this);
 
             mObject.GameEntity.GetChildrenRecursive(ref childrens);
-            foreach (GameEntity child in childrens)
+            foreach (WeakGameEntity child in childrens)
             {
                 ScriptComponentBehavior[] spawnables = child.GetScriptComponents().Where(s => s is ISpawnable).ToArray();
                 foreach (ISpawnable spawnable in spawnables) spawnable.OnSpawnedByPrefab(this);
@@ -181,13 +185,13 @@ namespace PersistentEmpiresLib.SceneScripts
                 ScriptComponentBehavior[] strayScripts = child.GetScriptComponents().Where(s => s is IStray).ToArray();
                 foreach (IStray stray in strayScripts)
                 {
-                    this.StrayEntity[mObject.GameEntity] = (IStray)stray;
+                    this.StrayEntity[mObject.GameEntity.ToGE()] = (IStray)stray;
                 }
             }
             ScriptComponentBehavior[] strayScripts2 = mObject.GameEntity.GetScriptComponents().Where(s => s is IStray).ToArray();
             foreach (IStray stray in strayScripts2)
             {
-                this.StrayEntity[mObject.GameEntity] = (IStray)stray;
+                this.StrayEntity[mObject.GameEntity.ToGE()] = (IStray)stray;
             }
         }
 

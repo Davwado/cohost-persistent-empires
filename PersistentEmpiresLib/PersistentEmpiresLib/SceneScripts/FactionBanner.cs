@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.Helpers;
+﻿using TaleWorlds.Engine;
+using PersistentEmpiresLib.Helpers;
 using System;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
@@ -20,7 +21,7 @@ namespace PersistentEmpiresLib.SceneScripts
         public void SetBannerKey(string BannerKey)
         {
             this.BannerKey = BannerKey;
-            BannerRenderer.RequestRenderBanner(new Banner(this.BannerKey), base.GameEntity);
+            BannerRenderer.RequestRenderBanner(new Banner(this.BannerKey), base.GameEntity.ToGE());
         }
     }
 }

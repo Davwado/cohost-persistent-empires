@@ -190,7 +190,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         private void SyncCarts(NetworkCommunicator peer)
         {
-            List<GameEntity> gameEntities = base.Mission.GetActiveEntitiesWithScriptComponentOfType<PE_AttachToAgent>().ToList();
+            List<GameEntity> gameEntities = base.Mission.GetActiveEntitiesWithScriptComponentOfType<PE_AttachToAgent>().ToGEList();
             foreach (GameEntity g in gameEntities)
             {
                 PE_AttachToAgent comp = g.GetFirstScriptOfType<PE_AttachToAgent>();
@@ -217,7 +217,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         private void SyncMoveableObject(NetworkCommunicator peer)
         {
-            List<GameEntity> gameEntities = base.Mission.GetActiveEntitiesWithScriptComponentOfType<PE_MoveableMachine>().ToList();
+            List<GameEntity> gameEntities = base.Mission.GetActiveEntitiesWithScriptComponentOfType<PE_MoveableMachine>().ToGEList();
             foreach (GameEntity g in gameEntities)
             {
                 PE_MoveableMachine moveableMachine = g.GetFirstScriptOfType<PE_MoveableMachine>();
@@ -626,7 +626,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         {
             if (message.MissionObject != null)
             {
-                GameEntity gameEntity = message.MissionObject.GameEntity;
+                GameEntity gameEntity = message.MissionObject.GameEntity.ToGE();
                 gameEntity.AddPhysics(gameEntity.Mass, gameEntity.CenterOfMass, gameEntity.GetBodyShape(), message.InitialVelocity, message.AngularVelocity, PhysicsMaterial.GetFromName(message.PhysicsMaterial), false, 0);
             }
         }

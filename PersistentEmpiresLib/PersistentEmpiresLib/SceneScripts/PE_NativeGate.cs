@@ -156,7 +156,7 @@ namespace PersistentEmpiresLib.SceneScripts
             {
                 return;
             }
-            List<GameEntity> list = base.GameEntity.CollectChildrenEntitiesWithTag("middle_pos");
+            List<GameEntity> list = base.GameEntity.CollectChildrenEntitiesWithTagGE("middle_pos");
             if (list.Count > 0)
             {
                 GameEntity gameEntity2 = list.FirstOrDefault<GameEntity>();
@@ -170,7 +170,7 @@ namespace PersistentEmpiresLib.SceneScripts
                 MatrixFrame globalFrame2 = base.GameEntity.GetGlobalFrame();
                 this._middleFrame = new WorldFrame(globalFrame2.rotation, globalFrame2.origin.ToWorldPosition());
             }
-            List<GameEntity> list2 = base.GameEntity.CollectChildrenEntitiesWithTag("wait_pos");
+            List<GameEntity> list2 = base.GameEntity.CollectChildrenEntitiesWithTagGE("wait_pos");
             if (list2.Count > 0)
             {
                 GameEntity gameEntity3 = list2.FirstOrDefault<GameEntity>();
@@ -193,7 +193,7 @@ namespace PersistentEmpiresLib.SceneScripts
         {
             PE_RepairableDestructableComponent comp = base.GameEntity.GetFirstScriptOfType<PE_RepairableDestructableComponent>();
 
-            foreach (GameEntity entity in base.GameEntity.GetChildren().ToList())
+            foreach (GameEntity entity in base.GameEntity.GetChildrenGE().ToList())
             {
                 if (entity != comp.BrokenState()) entity.SetVisibilityExcludeParents(true);
             }
@@ -273,7 +273,11 @@ namespace PersistentEmpiresLib.SceneScripts
         }
 
         // Token: 0x06002BD2 RID: 11218 RVA: 0x000AA32D File Offset: 0x000A852D
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return new TextObject("{=6wZUG0ev}Gate", null).ToString();
         }
@@ -669,7 +673,7 @@ namespace PersistentEmpiresLib.SceneScripts
         }
 
         // Token: 0x06002BE2 RID: 11234 RVA: 0x000AAF30 File Offset: 0x000A9130
-        public GameEntity GetTargetEntity()
+        public WeakGameEntity GetTargetEntity()
         {
             return base.GameEntity;
         }
@@ -681,18 +685,33 @@ namespace PersistentEmpiresLib.SceneScripts
         }
 
         // Token: 0x06002BE4 RID: 11236 RVA: 0x000AAF3B File Offset: 0x000A913B
-        public GameEntity Entity()
+        public WeakGameEntity Entity()
         {
             return base.GameEntity;
         }
 
         // Token: 0x06002BE5 RID: 11237 RVA: 0x000AAF44 File Offset: 0x000A9144
+        public Vec3 GetTargetGlobalVelocity()
+        {
+            return Vec3.Zero;
+        }
+
+        public bool IsDestructable()
+        {
+            return base.GameEntity.HasScriptOfType<DestructableComponent>();
+        }
+
+        public (Vec3, Vec3) ComputeGlobalPhysicsBoundingBoxMinMax()
+        {
+            return base.GameEntity.ComputeGlobalPhysicsBoundingBoxMinMax();
+        }
+
         protected void CollectGameEntities(bool calledFromOnInit)
         {
             this.CollectDynamicGameEntities(calledFromOnInit);
             if (!GameNetwork.IsClientOrReplay)
             {
-                List<GameEntity> list = base.GameEntity.CollectChildrenEntitiesWithTag("plank");
+                List<GameEntity> list = base.GameEntity.CollectChildrenEntitiesWithTagGE("plank");
                 if (list.Count > 0)
                 {
                     this._plank = list.FirstOrDefault<GameEntity>().GetFirstScriptOfType<SynchedMissionObject>();
@@ -707,15 +726,15 @@ namespace PersistentEmpiresLib.SceneScripts
             List<GameEntity> list;
             if (calledFromOnInit)
             {
-                list = base.GameEntity.CollectChildrenEntitiesWithTag("gate").ToList<GameEntity>();
+                list = base.GameEntity.CollectChildrenEntitiesWithTagGE("gate").ToList<GameEntity>();
                 this._leftExtraColliderDisabled = false;
                 this._rightExtraColliderDisabled = false;
-                this._agentColliderLeft = base.GameEntity.GetFirstChildEntityWithTag("collider_agent_l");
-                this._agentColliderRight = base.GameEntity.GetFirstChildEntityWithTag("collider_agent_r");
+                this._agentColliderLeft = base.GameEntity.GetFirstChildEntityWithTag("collider_agent_l").ToGE();
+                this._agentColliderRight = base.GameEntity.GetFirstChildEntityWithTag("collider_agent_r").ToGE();
             }
             else
             {
-                list = (from x in base.GameEntity.CollectChildrenEntitiesWithTag("gate")
+                list = (from x in base.GameEntity.CollectChildrenEntitiesWithTagGE("gate")
                         where x.IsVisibleIncludeParents()
                         select x).ToList<GameEntity>();
             }
@@ -750,12 +769,12 @@ namespace PersistentEmpiresLib.SceneScripts
                 this._door = list[0].GetFirstScriptOfType<SynchedMissionObject>();
             }
             this._doorSkeleton = this._door.GameEntity.Skeleton;
-            GameEntity gameEntity4 = this._door.GameEntity.CollectChildrenEntitiesWithTag("collider_r").FirstOrDefault<GameEntity>();
+            GameEntity gameEntity4 = this._door.GameEntity.CollectChildrenEntitiesWithTagGE("collider_r").FirstOrDefault<GameEntity>();
             if (gameEntity4 != null)
             {
                 this._attackOnlyDoorColliders.Add(gameEntity4);
             }
-            GameEntity gameEntity5 = this._door.GameEntity.CollectChildrenEntitiesWithTag("collider_l").FirstOrDefault<GameEntity>();
+            GameEntity gameEntity5 = this._door.GameEntity.CollectChildrenEntitiesWithTagGE("collider_l").FirstOrDefault<GameEntity>();
             if (gameEntity5 != null)
             {
                 this._attackOnlyDoorColliders.Add(gameEntity5);
@@ -773,7 +792,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     agentColliderRight.SetVisibilityExcludeParents(false);
                 }
             }
-            GameEntity gameEntity6 = this._door.GameEntity.CollectChildrenEntitiesWithTag(this.ExtraCollisionObjectTagLeft).FirstOrDefault<GameEntity>();
+            GameEntity gameEntity6 = this._door.GameEntity.CollectChildrenEntitiesWithTagGE(this.ExtraCollisionObjectTagLeft).FirstOrDefault<GameEntity>();
             if (gameEntity6 != null)
             {
                 if (!this.ActivateExtraColliders)
@@ -802,7 +821,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     }
                 }
             }
-            GameEntity gameEntity7 = this._door.GameEntity.CollectChildrenEntitiesWithTag(this.ExtraCollisionObjectTagRight).FirstOrDefault<GameEntity>();
+            GameEntity gameEntity7 = this._door.GameEntity.CollectChildrenEntitiesWithTagGE(this.ExtraCollisionObjectTagRight).FirstOrDefault<GameEntity>();
             if (gameEntity7 != null)
             {
                 if (!this.ActivateExtraColliders)
@@ -903,7 +922,7 @@ namespace PersistentEmpiresLib.SceneScripts
 
             PE_RepairableDestructableComponent comp = base.GameEntity.GetFirstScriptOfType<PE_RepairableDestructableComponent>();
 
-            foreach (GameEntity entity in base.GameEntity.GetChildren().ToList())
+            foreach (GameEntity entity in base.GameEntity.GetChildrenGE().ToList())
             {
                 if (entity != comp.BrokenState()) entity.SetVisibilityExcludeParents(false);
             }
@@ -919,7 +938,7 @@ namespace PersistentEmpiresLib.SceneScripts
                 MBEditor.AddEntityWarning(base.GameEntity, "This castle gate has both outer and inner tag at the same time.");
                 flag = true;
             }
-            if (base.GameEntity.CollectChildrenEntitiesWithTag("wait_pos").Count != 1)
+            if (base.GameEntity.CollectChildrenEntitiesWithTagGE("wait_pos").Count != 1)
             {
                 MBEditor.AddEntityWarning(base.GameEntity, "There must be one entity with wait position tag under castle gate.");
                 flag = true;
@@ -927,7 +946,7 @@ namespace PersistentEmpiresLib.SceneScripts
             if (base.GameEntity.HasTag("outer_gate"))
             {
                 uint visibilityMask = base.GameEntity.GetVisibilityLevelMaskIncludingParents();
-                GameEntity gameEntity = base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.HasTag("middle_pos") && x.GetVisibilityLevelMaskIncludingParents() == visibilityMask);
+                GameEntity gameEntity = base.GameEntity.GetChildrenGE().FirstOrDefault((GameEntity x) => x.HasTag("middle_pos") && x.GetVisibilityLevelMaskIncludingParents() == visibilityMask);
                 if (gameEntity != null)
                 {
                     GameEntity gameEntity2 = base.Scene.FindEntitiesWithTag("inner_gate").FirstOrDefault((GameEntity x) => x.GetVisibilityLevelMaskIncludingParents() == visibilityMask);

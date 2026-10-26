@@ -71,7 +71,7 @@ namespace PersistentEmpiresLib.SceneScripts
 
         private void CheckIfLanded(MatrixFrame oldFrame)
         {
-            if (base.GameEntity?.GlobalPosition == null || oldFrame == null)
+            if (!base.GameEntity.IsValid || oldFrame == null)
                 return;
 
             // Set a Default Value for Rays TODO
@@ -91,7 +91,7 @@ namespace PersistentEmpiresLib.SceneScripts
             Vec3 raycastPosition = startPosition;
             Vec3 raycastEndPosition = raycastPosition + movementDirection * radius;
 
-            if (Mission.Current.Scene.RayCastForClosestEntityOrTerrain(raycastPosition, raycastEndPosition, out _, out GameEntity hitEntity))
+            if (Mission.Current.Scene.RayCastForClosestEntityOrTerrain(raycastPosition, raycastEndPosition, out _, out WeakGameEntity hitEntity))
             {
                 if (hitEntity != base.GameEntity)
                 {
@@ -235,7 +235,11 @@ namespace PersistentEmpiresLib.SceneScripts
             return forStandingPoint;
         }
 
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return new TextObject("{=}Bloc's Ship").ToString();
         }
@@ -285,7 +289,14 @@ namespace PersistentEmpiresLib.SceneScripts
         }
 
 
-        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
+        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
+        {
+            finalDamage = damage;
+            fireDamage = -1f;
+            modifiedFireDamage = -1f;
+            return this.OnHitLegacy(attackerAgent, damage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out reportDamage);
+        }
+        private bool OnHitLegacy(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
         {
             reportDamage = true;
             WeaponComponentData currentUsageItem = weapon.CurrentUsageItem;

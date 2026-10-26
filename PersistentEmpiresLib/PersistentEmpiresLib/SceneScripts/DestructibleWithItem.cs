@@ -93,7 +93,7 @@ namespace PersistentEmpiresLib.SceneScripts
         public void TriggerOnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior)
         {
             bool flag;
-            this.OnHit(attackerAgent, inflictedDamage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out flag);
+            this.OnHitLegacy(attackerAgent, inflictedDamage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out flag);
         }
 
         private void SpawnItem(Agent agent, ItemObject item)
@@ -117,7 +117,7 @@ namespace PersistentEmpiresLib.SceneScripts
             }
             else
             {
-                base.GameEntity.FadeIn();
+                base.GameEntity.ToGE().FadeIn();
             }
             base.GameEntity.RemovePhysics();
             base.GameEntity.SetGlobalFrame(initialFrame);
@@ -155,7 +155,7 @@ namespace PersistentEmpiresLib.SceneScripts
                 }
                 else
                 {
-                    base.GameEntity.FadeOut(1, false);
+                    base.GameEntity.ToGE().FadeOut(1, false);
                 }
                 this.destructedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
                 this.destructed = true;
@@ -168,7 +168,14 @@ namespace PersistentEmpiresLib.SceneScripts
             }
         }
 
-        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
+        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
+        {
+            finalDamage = damage;
+            fireDamage = -1f;
+            modifiedFireDamage = -1f;
+            return this.OnHitLegacy(attackerAgent, damage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out reportDamage);
+        }
+        private bool OnHitLegacy(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
         {
             reportDamage = true;
             MissionWeapon missionWeapon = weapon;

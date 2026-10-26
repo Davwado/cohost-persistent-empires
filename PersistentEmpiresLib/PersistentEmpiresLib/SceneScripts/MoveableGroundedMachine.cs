@@ -83,7 +83,11 @@ namespace PersistentEmpiresLib.SceneScripts
             return forStandingPoint;
         }
 
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return new TextObject("{=}" + this.Name).ToString();
         }
@@ -243,7 +247,14 @@ namespace PersistentEmpiresLib.SceneScripts
             }
         }
 
-        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
+        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
+        {
+            finalDamage = damage;
+            fireDamage = -1f;
+            modifiedFireDamage = -1f;
+            return this.OnHitLegacy(attackerAgent, damage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out reportDamage);
+        }
+        private bool OnHitLegacy(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
         {
             reportDamage = true;
             MissionWeapon missionWeapon = weapon;

@@ -358,7 +358,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             }
             try
             {
-                List<BannerData> bannerDatas = Banner.GetBannerDataFromBannerCode(updateFactionBanner.BannerCode);
+                List<BannerData> bannerDatas;
+                if (!Banner.TryGetBannerDataFromCode(updateFactionBanner.BannerCode, out bannerDatas)) throw new System.ArgumentException("Invalid banner code");
                 for (int i = 0; i < bannerDatas.Count; i++)
                 {
                     BannerData bannerData = bannerDatas[i];

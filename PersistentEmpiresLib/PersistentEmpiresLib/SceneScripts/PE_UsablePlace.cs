@@ -7,7 +7,11 @@ namespace PersistentEmpiresLib.SceneScripts
     public class PE_UsablePlace : UsableMachine
     {
         // Token: 0x060001EA RID: 490 RVA: 0x0000D2D9 File Offset: 0x0000B4D9
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             StandingPoint pilotStandingPoint = base.PilotStandingPoint;
             if (pilotStandingPoint == null)

@@ -84,7 +84,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             Agent myAgent = GameNetwork.MyPeer.ControlledAgent;
             if (myAgent == null) return false;
 
-            EquipmentIndex wieldedIndex = myAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+            EquipmentIndex wieldedIndex = myAgent.GetOffhandWieldedItemIndex();
             if (wieldedIndex == EquipmentIndex.None) return false;
 
             MissionWeapon equipment = myAgent.Equipment[wieldedIndex];
@@ -213,7 +213,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             PersistentEmpireRepresentative persistentEmpireRepresentative = peer.GetComponent<PersistentEmpireRepresentative>();
             if (persistentEmpireRepresentative == null) return false;
 
-            EquipmentIndex index = peer.ControlledAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+            EquipmentIndex index = peer.ControlledAgent.GetOffhandWieldedItemIndex();
             if (index == EquipmentIndex.None) return false;
             MissionWeapon equipmentElement = peer.ControlledAgent.Equipment[index];
 

@@ -33,7 +33,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             networkMessageHandlerRegisterer.Register<LocalMessage>(HandleLocalMessageFromClient);
             networkMessageHandlerRegisterer.Register<ShoutMessage>(HandleShoutMessageFromClient);
-            networkMessageHandlerRegisterer.Register<PlayerIsTypingMessage>(HandlePlayerIsTypingMessageFromClient);
+            // Not registered: the Workshop build has no PlayerIsTyping messages and message ids are assigned by sorted type name,
+            // so an extra type would shift every id and break the client. See port/README.md.
         }
 
         private bool HandleLocalMessageFromClient(NetworkCommunicator player, LocalMessage message)
@@ -155,7 +156,6 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             networkMessageHandlerRegisterer.Register<LocalMessageServer>(this.HandleLocalMessageFromServer);
             networkMessageHandlerRegisterer.Register<ShoutMessageServer>(this.HandleShoutMessageFromServer);
             networkMessageHandlerRegisterer.Register<CustomBubbleMessage>(this.HandleCustomBubbleMessageFromServer);
-            networkMessageHandlerRegisterer.Register<PlayerIsTypingMessageServer>(HandlePlayerIsTypingMessageServer);
         }
 
         private void HandleCustomBubbleMessageFromServer(CustomBubbleMessage message)

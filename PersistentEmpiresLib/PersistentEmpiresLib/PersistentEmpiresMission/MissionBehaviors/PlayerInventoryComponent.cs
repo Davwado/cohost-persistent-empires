@@ -174,7 +174,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (GameNetwork.IsServer && affectedAgent.IsHuman && affectedAgent.IsPlayerControlled && agentState == AgentState.Killed)
             {
                 affectedAgent.TryToSheathWeaponInHand(Agent.HandIndex.MainHand, Agent.WeaponWieldActionType.Instant);
-                EquipmentIndex shieldIndex = affectedAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+                EquipmentIndex shieldIndex = affectedAgent.GetOffhandWieldedItemIndex();
                 if (shieldIndex != EquipmentIndex.None)
                 {
                     MissionWeapon weapon = new MissionWeapon(affectedAgent.Equipment[shieldIndex].Item, null, null, affectedAgent.Equipment[shieldIndex].Ammo);
@@ -242,8 +242,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 Inventory lootInventory = new Inventory(0, 0, lootInventoryId);
                 lootInventory.IsConsumable = true;
                 Equipment equipments = AgentHelpers.GetCurrentAgentEquipment(affectedAgent);
-                EquipmentIndex mainHand = affectedAgent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
-                EquipmentIndex offHand = affectedAgent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+                EquipmentIndex mainHand = affectedAgent.GetPrimaryWieldedItemIndex();
+                EquipmentIndex offHand = affectedAgent.GetOffhandWieldedItemIndex();
 
                 bool killedByFriendly = false;
 
@@ -295,7 +295,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
                 playerInventory.EmptyInventory();
                 MatrixFrame frame = affectedAgent.Frame;
-                PE_InventoryEntity droppedLoot = (PE_InventoryEntity)base.Mission.CreateMissionObjectFromPrefab("pe_loot", frame);
+                PE_InventoryEntity droppedLoot = (PE_InventoryEntity)base.Mission.CreateMissionObjectFromPrefab("pe_loot", frame, false, 0f, null);
                 lootInventory.TiedEntity = droppedLoot;
                 droppedLoot.InventoryId = lootInventory.InventoryId;
                 droppedLoot.InventoryName = "Loot " + player.UserName + "'s Body";
@@ -491,7 +491,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 Inventory lootInventory = new Inventory(0, 0, lootInventoryId);
                 lootInventory.IsConsumable = true;
                 MatrixFrame frame = player.ControlledAgent.Frame;
-                droppedLoot = (PE_InventoryEntity)base.Mission.CreateMissionObjectFromPrefab("pe_loot", frame);
+                droppedLoot = (PE_InventoryEntity)base.Mission.CreateMissionObjectFromPrefab("pe_loot", frame, false, 0f, null);
                 droppedLoot.InventoryId = lootInventory.InventoryId;
                 droppedLoot.InventoryName = "Dropped Items";
                 droppedLoot.Slot = lootInventory.Slots.Count;

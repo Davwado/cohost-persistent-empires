@@ -72,7 +72,11 @@ namespace PersistentEmpiresLib.SceneScripts
             this.NeededReceipt = this.ParseReceipts(this.NeededItemRecipies);
             this.DropReceipt = this.ParseReceipts(this.DropItemRecipies);
         }
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return "Animal Spawner";
         }
@@ -154,14 +158,14 @@ namespace PersistentEmpiresLib.SceneScripts
                     ItemRosterElement harnessRosterElement = this.HorseHarness == "" ? default(ItemRosterElement) : new ItemRosterElement(MBObjectManager.Instance.GetObject<ItemObject>(this.HorseHarness), 1);
                     Vec2 asVec = globalFrame.rotation.f.AsVec2;
                     Agent agent = mission.SpawnMonster(rosterElement, harnessRosterElement, globalFrame.origin, asVec, -1);
-                    AnimalSpawnSettings.CheckAndSetAnimalAgentFlags(this.GameEntity, agent);
+                    AnimalSpawnSettings.CheckAndSetAnimalAgentFlags(this.GameEntity.ToGE(), agent);
                     SpawnedAnimals.Add(agent);
                     AnimalButcheringBehavior.Instance.AgentToAnimalSpawner[agent] = this;
                 }
             }
             if (userAgent.IsMine) PEInformationManager.StopCounter();
         }
-        public override void OnUse(Agent userAgent)
+        public override void OnUse(Agent userAgent, sbyte agentBoneIndex)
         {
             if (GameNetwork.IsServer)
             {
@@ -180,7 +184,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     return;
                 }
 
-                base.OnUse(userAgent);
+                base.OnUse(userAgent, agentBoneIndex);
                 ActionIndexCache actionIndexCache = ActionIndexCache.Create(this.Animation);
                 userAgent.SetActionChannel(0, actionIndexCache, true, 0UL, 0.0f, 1f, -0.2f, 0.4f, 0f, false, -0.2f, 0, true);
                 this.UseStartedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();

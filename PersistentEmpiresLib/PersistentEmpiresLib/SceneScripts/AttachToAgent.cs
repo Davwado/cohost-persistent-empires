@@ -60,7 +60,7 @@ namespace PersistentEmpiresLib.SceneScripts
                 this.DetachFromAgentAux();
                 return;
             }
-            GameEntity parentEntity = base.GameEntity.Parent;
+            GameEntity parentEntity = base.GameEntity.Parent.ToGE();
 
             MatrixFrame frame = parentEntity.GetGlobalFrame();
             frame.rotation = this.AttachedTo.Frame.rotation;
@@ -108,7 +108,7 @@ namespace PersistentEmpiresLib.SceneScripts
             descriptionMessage.SetTextVariable("KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 13)));
             base.DescriptionMessage = descriptionMessage;
             this.ResetStrayDuration();
-            GameEntity parentEntity = base.GameEntity.Parent;
+            GameEntity parentEntity = base.GameEntity.Parent.ToGE();
             SynchedMissionObject synchObject = parentEntity.GetFirstScriptOfType<SynchedMissionObject>();
             var prop = typeof(SynchedMissionObject).GetField("_initialSynchFlags", BindingFlags.NonPublic | BindingFlags.Instance);
             SynchedMissionObject.SynchFlags syncFlags = (SynchedMissionObject.SynchFlags)prop.GetValue(synchObject);
@@ -127,9 +127,9 @@ namespace PersistentEmpiresLib.SceneScripts
             this.AttachToAgentAux(attachedTo);
         }
 
-        public override void OnUse(Agent userAgent)
+        public override void OnUse(Agent userAgent, sbyte agentBoneIndex)
         {
-            base.OnUse(userAgent);
+            base.OnUse(userAgent, agentBoneIndex);
             Debug.Print("[USING LOG] AGENT USING " + this.GetType().Name);
             if (this.AttachedTo == null)
             {
@@ -163,7 +163,11 @@ namespace PersistentEmpiresLib.SceneScripts
             this.AttachedTo = attachableAgent;
         }
 
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return "Attach";
         }
@@ -207,7 +211,14 @@ namespace PersistentEmpiresLib.SceneScripts
             }*/
         }
 
-        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
+        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
+        {
+            finalDamage = damage;
+            fireDamage = -1f;
+            modifiedFireDamage = -1f;
+            return this.OnHitLegacy(attackerAgent, damage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out reportDamage);
+        }
+        private bool OnHitLegacy(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
         {
             reportDamage = true;
             MissionWeapon missionWeapon = weapon;

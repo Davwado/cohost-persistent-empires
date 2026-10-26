@@ -77,7 +77,7 @@ namespace PersistentEmpiresLib.SceneScripts
         {
             if (!string.IsNullOrEmpty(this.ReferenceEntityTag))
             {
-                GameEntity entity = base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.HasTag(this.ReferenceEntityTag));
+                GameEntity entity = base.GameEntity.GetChildrenGE().FirstOrDefault((GameEntity x) => x.HasTag(this.ReferenceEntityTag));
                 if (entity == null)
                 {
                     MBEditor.AddEntityWarning(base.GameEntity, base.GameEntity.GetPrefabName() + " RepairableDestructableComponent game entity tagged " + this.ReferenceEntityTag + " not found in childrens");
@@ -109,12 +109,12 @@ namespace PersistentEmpiresLib.SceneScripts
         {
             base.OnInit();
             this.HitPoint = this.MaxHitPoint;
-            this._healthyState = string.IsNullOrEmpty(this.ReferenceEntityTag) ? base.GameEntity : base.GameEntity.GetChildren().FirstOrDefault((GameEntity x) => x.HasTag(this.ReferenceEntityTag));
+            this._healthyState = string.IsNullOrEmpty(this.ReferenceEntityTag) ? base.GameEntity.ToGE() : base.GameEntity.GetChildrenGE().FirstOrDefault((GameEntity x) => x.HasTag(this.ReferenceEntityTag));
             this._originalStatePrefab = this._healthyState.GetPrefabName();
             if (this.DestructionState != "")
             {
-                this._brokenState = GameEntity.Instantiate(Mission.Current.Scene, this.DestructionState, this._healthyState.GetGlobalFrame());
-                base.GameEntity.AddChild(this._brokenState, true);
+                this._brokenState = TaleWorlds.Engine.GameEntity.Instantiate(Mission.Current.Scene, this.DestructionState, this._healthyState.GetGlobalFrame());
+                base.GameEntity.AddChild(this._brokenState.WeakEntity, true);
                 this._brokenState.SetVisibilityExcludeParents(false);
             }
             this.ParseRepairReceipts();
@@ -185,10 +185,17 @@ namespace PersistentEmpiresLib.SceneScripts
         public void TriggerOnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior)
         {
             bool flag;
-            this.OnHit(attackerAgent, inflictedDamage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out flag);
+            this.OnHitLegacy(attackerAgent, inflictedDamage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out flag);
         }
 
-        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
+        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
+        {
+            finalDamage = damage;
+            fireDamage = -1f;
+            modifiedFireDamage = -1f;
+            return this.OnHitLegacy(attackerAgent, damage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out reportDamage);
+        }
+        private bool OnHitLegacy(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
         {
             reportDamage = true;
             MissionWeapon missionWeapon = weapon;

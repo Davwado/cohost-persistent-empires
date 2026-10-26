@@ -38,9 +38,9 @@ namespace PersistentEmpiresLib.SceneScripts
         protected override void OnInit()
         {
             base.OnInit();
-            this._portcullis = base.GameEntity.GetFirstChildEntityWithTag(this.PortcullisTag);
-            this._pointA = base.GameEntity.GetFirstChildEntityWithTag(this.PointATag).GetFrame().origin;
-            this._pointB = base.GameEntity.GetFirstChildEntityWithTag(this.PointBTag).GetFrame().origin;
+            this._portcullis = base.GameEntity.GetFirstChildEntityWithTag(this.PortcullisTag).ToGE();
+            this._pointA = base.GameEntity.GetFirstChildEntityWithTag(this.PointATag).ToGE().GetFrame().origin;
+            this._pointB = base.GameEntity.GetFirstChildEntityWithTag(this.PointBTag).ToGE().GetFrame().origin;
 
             SynchedMissionObject synchObject = this._portcullis.GetFirstScriptOfType<SynchedMissionObject>();
 
@@ -57,15 +57,15 @@ namespace PersistentEmpiresLib.SceneScripts
 
             foreach (StandingPoint standingPoint in this.StandingPoints)
             {
-                standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none));
+                standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, false));
                 standingPoint.AutoSheathWeapons = true;
             }
         }
         protected bool ValidateValues()
         {
-            GameEntity portcullis = base.GameEntity.GetFirstChildEntityWithTag(this.PortcullisTag);
-            GameEntity pointAEntity = base.GameEntity.GetFirstChildEntityWithTag(this.PointATag);
-            GameEntity pointBEntity = base.GameEntity.GetFirstChildEntityWithTag(this.PointBTag);
+            GameEntity portcullis = base.GameEntity.GetFirstChildEntityWithTag(this.PortcullisTag).ToGE();
+            GameEntity pointAEntity = base.GameEntity.GetFirstChildEntityWithTag(this.PointATag).ToGE();
+            GameEntity pointBEntity = base.GameEntity.GetFirstChildEntityWithTag(this.PointBTag).ToGE();
             if (portcullis == null)
             {
                 MBEditor.AddEntityWarning(base.GameEntity, "Portcullis body not found");
@@ -122,7 +122,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     }
                     else if (standingPoint.GameEntity.HasTag(this.ToAUseTag))
                     {
-                        if (standingPoint.UserAgent.GetCurrentAction(0).Name == "act_none" && this.ElevationAnimation != "")
+                        if (standingPoint.UserAgent.GetCurrentAction(0).GetName() == "act_none" && this.ElevationAnimation != "")
                         {
                             standingPoint.UserAgent.SetActionChannel(0, ActionIndexCache.Create(this.ElevationAnimation), true, 0UL, 0.0f, 1f, -0.2f, 0.4f, 0f, false, -0.2f, 0, true);
                         }
@@ -130,7 +130,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     }
                     else if (standingPoint.GameEntity.HasTag(this.ToBUseTag))
                     {
-                        if (standingPoint.UserAgent.GetCurrentAction(0).Name == "act_none" && this.LowerAnimation != "")
+                        if (standingPoint.UserAgent.GetCurrentAction(0).GetName() == "act_none" && this.LowerAnimation != "")
                         {
                             standingPoint.UserAgent.SetActionChannel(0, ActionIndexCache.Create(this.LowerAnimation), true, 0UL, 0.0f, 1f, -0.2f, 0.4f, 0f, false, -0.2f, 0, true);
                         }
@@ -200,7 +200,11 @@ namespace PersistentEmpiresLib.SceneScripts
             return new TextObject("");
         }
 
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return "";
         }

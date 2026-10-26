@@ -28,7 +28,7 @@ namespace PersistentEmpiresLib.SceneScripts
         }
         public void AddPhysicsSynchedPE(Vec3 initialVelocity, Vec3 angularVelocity, string physicsMaterial)
         {
-            GameEntity gameEntity = base.GameEntity;
+            GameEntity gameEntity = base.GameEntity.ToGE();
             gameEntity.AddPhysics(gameEntity.Mass, gameEntity.CenterOfMass, gameEntity.GetBodyShape(), initialVelocity, angularVelocity, PhysicsMaterial.GetFromName(physicsMaterial), false, 0);
             if (GameNetwork.IsServerOrRecorder)
             {

@@ -38,7 +38,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 {
                     pickedAgents.Remove(a);
 
-                    EquipmentIndex index = a.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+                    EquipmentIndex index = a.GetPrimaryWieldedItemIndex();
                     
                     if (index != EquipmentIndex.None)
                     {
@@ -65,7 +65,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 Debug.Print("Lockpicked, crash test");
                 pickedAgents[picker] = 5;
 
-                /*EquipmentIndex index = picker.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+                /*EquipmentIndex index = picker.GetPrimaryWieldedItemIndex();
                 if (index == EquipmentIndex.None) return false;
                 picker.RemoveEquippedWeapon(index);*/
                 return true;

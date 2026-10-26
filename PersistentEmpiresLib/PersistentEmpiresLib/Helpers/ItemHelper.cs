@@ -131,7 +131,7 @@ namespace PersistentEmpiresLib.Helpers
         public static GameEntity SpawnWeaponWithNewEntityAux(Scene scene, MissionWeapon weapon, Mission.WeaponSpawnFlags spawnFlags, MatrixFrame frame, int forcedSpawnIndex, MissionObject attachedMissionObject, bool hasLifeTime)
         {
             GameEntity gameEntity = GameEntityExtensions.Instantiate(scene, weapon, spawnFlags.HasAnyFlag(Mission.WeaponSpawnFlags.WithHolster), true);
-            gameEntity.CreateAndAddScriptComponent(typeof(SpawnedItemEntity).Name);
+            gameEntity.CreateAndAddScriptComponent(typeof(SpawnedItemEntity).Name, true);
             SpawnedItemEntity firstScriptOfType = gameEntity.GetFirstScriptOfType<SpawnedItemEntity>();
             if (forcedSpawnIndex >= 0)
             {
@@ -139,7 +139,7 @@ namespace PersistentEmpiresLib.Helpers
             }
             if (attachedMissionObject != null)
             {
-                attachedMissionObject.GameEntity.AddChild(gameEntity, false);
+                attachedMissionObject.GameEntity.AddChild(gameEntity.WeakEntity, false);
             }
             if (attachedMissionObject != null)
             {
@@ -155,7 +155,7 @@ namespace PersistentEmpiresLib.Helpers
             if (GameNetwork.IsServerOrRecorder)
             {
                 GameNetwork.BeginBroadcastModuleEvent();
-                GameNetwork.WriteMessage(new SpawnWeaponWithNewEntity(weapon, spawnFlags, firstScriptOfType.Id.Id, frame, attachedMissionObject == null ? MissionObjectId.Invalid : attachedMissionObject.Id, true, hasLifeTime));
+                GameNetwork.WriteMessage(new SpawnWeaponWithNewEntity(weapon, spawnFlags, firstScriptOfType.Id.Id, frame, attachedMissionObject == null ? MissionObjectId.Invalid : attachedMissionObject.Id, true, hasLifeTime, false));
                 GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord, null);
                 for (int i = 0; i < weapon.GetAttachedWeaponsCount(); i++)
                 {

@@ -34,8 +34,8 @@ namespace PersistentEmpiresLib.SceneScripts
         protected override void OnInit()
         {
             base.OnInit();
-            this._portcullis = base.GameEntity.GetFirstChildEntityWithTag(this.PortcullisTag);
-            this._maxElevationZ = base.GameEntity.GetFirstChildEntityWithTag(this.ElevationPointTag).GetFrame().origin.Z;
+            this._portcullis = base.GameEntity.GetFirstChildEntityWithTag(this.PortcullisTag).ToGE();
+            this._maxElevationZ = base.GameEntity.GetFirstChildEntityWithTag(this.ElevationPointTag).ToGE().GetFrame().origin.Z;
             this._minElevationZ = this._portcullis.GetFrame().origin.Z;
 
             SynchedMissionObject synchObject = this._portcullis.GetFirstScriptOfType<SynchedMissionObject>();
@@ -52,14 +52,14 @@ namespace PersistentEmpiresLib.SceneScripts
 
             foreach (StandingPoint standingPoint in this.StandingPoints)
             {
-                standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none));
+                standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, false));
                 standingPoint.AutoSheathWeapons = true;
             }
         }
         protected bool ValidateValues()
         {
-            GameEntity portcullis = base.GameEntity.GetFirstChildEntityWithTag(this.PortcullisTag);
-            GameEntity elevation = base.GameEntity.GetFirstChildEntityWithTag(this.ElevationPointTag);
+            GameEntity portcullis = base.GameEntity.GetFirstChildEntityWithTag(this.PortcullisTag).ToGE();
+            GameEntity elevation = base.GameEntity.GetFirstChildEntityWithTag(this.ElevationPointTag).ToGE();
             if (portcullis == null)
             {
                 MBEditor.AddEntityWarning(base.GameEntity, "Portcullis body not found");
@@ -108,7 +108,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     }
                     else if (standingPoint.GameEntity.HasTag(this.ElevatorTag))
                     {
-                        if (standingPoint.UserAgent.GetCurrentAction(0).Name == "act_none" && this.ElevationAnimation != "")
+                        if (standingPoint.UserAgent.GetCurrentAction(0).GetName() == "act_none" && this.ElevationAnimation != "")
                         {
                             standingPoint.UserAgent.SetActionChannel(0, ActionIndexCache.Create(this.ElevationAnimation), true, 0UL, 0.0f, 1f, -0.2f, 0.4f, 0f, false, -0.2f, 0, true);
                         }
@@ -116,7 +116,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     }
                     else if (standingPoint.GameEntity.HasTag(this.LowerTag))
                     {
-                        if (standingPoint.UserAgent.GetCurrentAction(0).Name == "act_none" && this.LowerAnimation != "")
+                        if (standingPoint.UserAgent.GetCurrentAction(0).GetName() == "act_none" && this.LowerAnimation != "")
                         {
                             standingPoint.UserAgent.SetActionChannel(0, ActionIndexCache.Create(this.LowerAnimation), true, 0UL, 0.0f, 1f, -0.2f, 0.4f, 0f, false, -0.2f, 0, true);
                         }
@@ -186,7 +186,11 @@ namespace PersistentEmpiresLib.SceneScripts
             return new TextObject("");
         }
 
-        public override string GetDescriptionText(GameEntity gameEntity = null)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        {
+            return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
+        }
+        private string GetDescriptionTextLegacy(WeakGameEntity gameEntity)
         {
             return "";
         }

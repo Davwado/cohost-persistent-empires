@@ -77,27 +77,27 @@ namespace PersistentEmpiresLib.SceneScripts
 
         protected bool ValidateValues()
         {
-            if (base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier0Tag)) == null)
+            if (base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier0Tag)) == null)
             {
                 MBEditor.AddEntityWarning(base.GameEntity, base.GameEntity.GetPrefabName() + " Tier0Tag not found in childrens. " + this.Tier0Tag + " not found in childrens");
                 return false;
             }
-            if (base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier1Tag)) == null)
+            if (base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier1Tag)) == null)
             {
                 MBEditor.AddEntityWarning(base.GameEntity, base.GameEntity.GetPrefabName() + " Tier1Tag not found in childrens. " + this.Tier1Tag + " not found in childrens");
                 return false;
             }
-            if (this.Tier2Tag != "" && base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier2Tag)) == null)
+            if (this.Tier2Tag != "" && base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier2Tag)) == null)
             {
                 MBEditor.AddEntityWarning(base.GameEntity, base.GameEntity.GetPrefabName() + " Tier2Tag not found in childrens. " + this.Tier2Tag + " not found in childrens");
                 return false;
             }
-            if (this.Tier3Tag != "" && base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier3Tag)) == null)
+            if (this.Tier3Tag != "" && base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier3Tag)) == null)
             {
                 MBEditor.AddEntityWarning(base.GameEntity, base.GameEntity.GetPrefabName() + " Tier3Tag not found in childrens. " + this.Tier3Tag + " not found in childrens");
                 return false;
             }
-            if (base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.BuildingInteractiveTag)) == null)
+            if (base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.BuildingInteractiveTag)) == null)
             {
                 MBEditor.AddEntityWarning(base.GameEntity, base.GameEntity.GetPrefabName() + " BuildingInteractiveTag not found in childrens. " + this.BuildingInteractiveTag + " not found in childrens");
                 return false;
@@ -159,11 +159,11 @@ namespace PersistentEmpiresLib.SceneScripts
             this.Tier2Upgrade = this.ParseUpgradeReceipts(this.Tier2UpgradeReceipts);
             this.Tier3Upgrade = this.ParseUpgradeReceipts(this.Tier3UpgradeReceipts);
             this.CurrentTier = 0;
-            this._currentTierState = base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier0Tag));
-            this._tier0State = base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier0Tag));
-            this._tier1State = base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier1Tag));
-            this._tier2State = base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier2Tag));
-            this._tier3State = base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.Tier3Tag));
+            this._currentTierState = base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier0Tag));
+            this._tier0State = base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier0Tag));
+            this._tier1State = base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier1Tag));
+            this._tier2State = base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier2Tag));
+            this._tier3State = base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.Tier3Tag));
 
             _tier0State.SetVisibilityExcludeParents(true);
             _tier1State.SetVisibilityExcludeParents(false);
@@ -178,7 +178,7 @@ namespace PersistentEmpiresLib.SceneScripts
                 this.MaxTier = 3;
             }
 
-            this._upgradeInventory = base.GameEntity.GetChildren().FirstOrDefault((g) => g.Tags.Contains(this.BuildingInteractiveTag)).GetFirstScriptOfType<PE_InventoryEntity>();
+            this._upgradeInventory = base.GameEntity.GetChildrenGE().FirstOrDefault((g) => g.Tags.Contains(this.BuildingInteractiveTag)).GetFirstScriptOfType<PE_InventoryEntity>();
             this._playerInventoryComponent = Mission.Current.GetMissionBehavior<PlayerInventoryComponent>();
             this.MaxHitPoint = this.Tier1MaxHit;
         }
@@ -278,7 +278,14 @@ namespace PersistentEmpiresLib.SceneScripts
 
         }
 
-        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
+        protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
+        {
+            finalDamage = damage;
+            fireDamage = -1f;
+            modifiedFireDamage = -1f;
+            return this.OnHitLegacy(attackerAgent, damage, impactPosition, impactDirection, weapon, attackerScriptComponentBehavior, out reportDamage);
+        }
+        private bool OnHitLegacy(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage)
         {
             reportDamage = false;
             MissionWeapon missionWeapon = weapon;

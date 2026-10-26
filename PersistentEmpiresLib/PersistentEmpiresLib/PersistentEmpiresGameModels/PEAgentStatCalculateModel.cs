@@ -203,7 +203,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresGameModels
                 return;
             }
 
-            //var tmp = Mission.Current.GetActiveEntitiesWithScriptComponentOfType<PE_AttachToAgent>().ToList().Select(x => x.GetFirstScriptOfType<PE_AttachToAgent>());
+            //var tmp = Mission.Current.GetActiveEntitiesWithScriptComponentOfType<PE_AttachToAgent>().ToGEList().Select(x => x.GetFirstScriptOfType<PE_AttachToAgent>());
             //if (tmp.Any(x => x.AttachedTo == agent))
             //{
             //    agentDrivenProperties.MountManeuver = 0.8f;
@@ -282,10 +282,10 @@ namespace PersistentEmpiresLib.PersistentEmpiresGameModels
             
             weaponsTotalWeight *= 1f + ((perkHandler != null) ? perkHandler.GetEncumbrance(true) : 0f);
 
-            var mainHandWieldedItemIndex = agent.GetWieldedItemIndex(Agent.HandIndex.MainHand);
+            var mainHandWieldedItemIndex = agent.GetPrimaryWieldedItemIndex();
             var mainWeaponItem = (mainHandWieldedItemIndex != EquipmentIndex.None) ? equipment[mainHandWieldedItemIndex].Item : null;
             var mainWeaponWeaponComponentData = (mainHandWieldedItemIndex != EquipmentIndex.None) ? equipment[mainHandWieldedItemIndex].CurrentUsageItem : null;
-            var offHandWieldedItemIndex = agent.GetWieldedItemIndex(Agent.HandIndex.OffHand);
+            var offHandWieldedItemIndex = agent.GetOffhandWieldedItemIndex();
             var offHandWieldedWeaponComponentData = (offHandWieldedItemIndex != EquipmentIndex.None) ? equipment[offHandWieldedItemIndex].CurrentUsageItem : null;
 
             // 1. Calculate WeaponsEncumbrance
@@ -517,6 +517,21 @@ namespace PersistentEmpiresLib.PersistentEmpiresGameModels
         private int GetSkillValueForItem(BasicCharacterObject characterObject, ItemObject primaryItem)
         {
             return characterObject.GetSkillValue((primaryItem != null) ? primaryItem.RelevantSkill : DefaultSkills.Athletics);
+        }
+
+        public override float GetEquipmentStealthBonus(Agent agent)
+        {
+            return 0f;
+        }
+
+        public override float GetSneakAttackMultiplier(Agent agent, WeaponComponentData weapon)
+        {
+            return 1f;
+        }
+
+        public override float GetBreatheHoldMaxDuration(Agent agent, float baseBreatheHoldMaxDuration)
+        {
+            return baseBreatheHoldMaxDuration;
         }
 
         public override float GetWeaponDamageMultiplier(Agent agent, WeaponComponentData weapon)
