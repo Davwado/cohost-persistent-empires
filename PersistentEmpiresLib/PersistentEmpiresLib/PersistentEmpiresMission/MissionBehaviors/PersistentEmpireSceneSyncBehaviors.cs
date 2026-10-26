@@ -135,7 +135,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 GameNetwork.WriteMessage(new UpdateItemGatheringDestroyed(itemGathering, itemGathering.IsDestroyed));
                 GameNetwork.EndModuleEventAsServer();
             }
-
+            // Upstream never advanced the chunk, so the same nodes were re-sent to the joining peer on every tick forever.
+            track.chunkIndex = track.chunkIndex + 1;
         }
         private void SendDestructableHitPointsInQueue(SyncingTrack track, Queue<SyncingTrack> q)
         {
