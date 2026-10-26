@@ -15,6 +15,7 @@ namespace PersistentEmpires.Views
         // public static RavenClient Raven;
         public static void InitializeSentry()
         {
+            CrashLog.Initialize();
             AppDomain.CurrentDomain.UnhandledException += HandleExceptionalExit;
             HarmonyLibClient.OnRglExceptionThrown += RglExceptionThrown;
             HarmonyLibClient.Instance.PatchFinalizer(typeof(Managed).GetMethod("ApplicationTick", BindingFlags.NonPublic | BindingFlags.Static));
@@ -29,7 +30,7 @@ namespace PersistentEmpires.Views
 
         public static void RglExceptionThrown(StackTrace obj, Exception rglException)
         {
-
+            try { CrashLog.Write("[rgl] " + rglException + Environment.NewLine + obj); } catch { }
         }
 
 
