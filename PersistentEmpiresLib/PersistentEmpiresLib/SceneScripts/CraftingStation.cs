@@ -110,7 +110,7 @@ namespace PersistentEmpiresLib.SceneScripts
             }
             else
             {
-                string xmlPath = ModuleHelper.GetXmlPath(this.ModuleFolder, "CraftingRecipies/" + this.CraftingRecieptTag);
+                string xmlPath = ModuleHelper.GetXmlPath(Main.ResolveModuleId(this.ModuleFolder), "CraftingRecipies/" + this.CraftingRecieptTag);
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.Load(xmlPath);
                 foreach (XmlNode node in xmlDocument.DocumentElement.ChildNodes)

@@ -46,7 +46,7 @@ namespace PersistentEmpiresLib.SceneScripts
             try
             {
                 Debug.Print("Initiating ImportExport Market With " + this.ModuleFolder + " Module");
-                string xmlPath = ModuleHelper.GetXmlPath(this.ModuleFolder, "Markets/" + this.XmlFile);
+                string xmlPath = ModuleHelper.GetXmlPath(Main.ResolveModuleId(this.ModuleFolder), "Markets/" + this.XmlFile);
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.Load(xmlPath);
 
