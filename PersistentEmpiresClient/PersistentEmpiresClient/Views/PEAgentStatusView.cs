@@ -3,37 +3,60 @@ using PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors;
 using PersistentEmpiresLib.SceneScripts;
 using System;
 using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.GauntletUI.Mission;
-using TaleWorlds.MountAndBlade.Missions.Handlers;
+using TaleWorlds.MountAndBlade.Missions.MissionLogics;
+using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
-using TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
+using TaleWorlds.MountAndBlade.ViewModelCollection;
+using TaleWorlds.MountAndBlade.ViewModelCollection.Missions.Interaction.InteractionItems;
+using TaleWorlds.ScreenSystem;
 
 namespace PersistentEmpires.Views.Views
 {
-    public class PEAgentStatusView : MissionGauntletBattleUIBase
+    // The agent status HUD (health / weapon / interaction prompt) plus PE's hunger bar. Same structure as the game's
+    // MissionGauntletAgentStatus (Bannerlord 1.4.8), driving PEHungerVM instead of MissionAgentStatusVM.
+    public class PEAgentStatusView : MissionAgentStatusUIHandler
     {
         private GauntletLayer _gauntletLayer;
         private PEHungerVM _dataSource;
+        private MissionMainAgentController _missionMainAgentController;
+        private MissionGauntletMainAgentEquipmentControllerView _missionMainAgentEquipmentControllerView;
+        private MissionHintLogic _missionHintLogic;
+        private bool _isInDeployement;
+        private AgentHungerBehavior _agentHungerBehavior;
+
+        public override void AddInteractionMessage(MissionInteractionItemBaseVM message)
+        {
+            base.AddInteractionMessage(message);
+            this._dataSource?.InteractionInterface.AddSecondaryMessage(message);
+        }
+
+        public override void RemoveInteractionMessage(MissionInteractionItemBaseVM message)
+        {
+            base.RemoveInteractionMessage(message);
+            this._dataSource?.InteractionInterface.RemoveSecondaryMessage(message);
+        }
+
+        public override bool HasInteractionMessage(MissionInteractionItemBaseVM message)
+        {
+            if (this._dataSource == null) return false;
+            return this._dataSource.InteractionInterface.HasSecondaryInteractionMessage(message);
+        }
 
         public override void OnMissionStateActivated()
         {
             base.OnMissionStateActivated();
-            PEHungerVM dataSource = this._dataSource;
-            if (dataSource == null)
-            {
-                return;
-            }
-            dataSource.OnMainAgentWeaponChange();
+            this._dataSource?.OnMainAgentWeaponChange();
         }
 
-        // Token: 0x06000185 RID: 389 RVA: 0x00008AC8 File Offset: 0x00006CC8
         public override void EarlyStart()
         {
             base.EarlyStart();
             this._dataSource = new PEHungerVM(100, base.Mission, base.MissionScreen.CombatCamera, new Func<float>(base.MissionScreen.GetCameraToggleProgress));
-            this._gauntletLayer = new GauntletLayer(this.ViewOrderPriority);
+            this._gauntletLayer = new GauntletLayer("PEAgentStatusView", this.ViewOrderPriority);
             this._gauntletLayer.LoadMovie("PEAgentStatusMain", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
             this._dataSource.TakenDamageController.SetIsEnabled(BannerlordConfig.EnableDamageTakenVisuals);
@@ -46,7 +69,7 @@ namespace PersistentEmpires.Views.Views
 
         public void SetHunger(int hunger)
         {
-            this._dataSource.Hunger = hunger;
+            if (this._dataSource != null) this._dataSource.Hunger = hunger;
         }
 
         protected override void OnCreateView()
@@ -54,214 +77,135 @@ namespace PersistentEmpires.Views.Views
             this._dataSource.IsAgentStatusAvailable = true;
         }
 
-        // Token: 0x06000187 RID: 391 RVA: 0x00008BA1 File Offset: 0x00006DA1
         protected override void OnDestroyView()
         {
             this._dataSource.IsAgentStatusAvailable = false;
         }
 
-        // Token: 0x06000188 RID: 392 RVA: 0x00008BAF File Offset: 0x00006DAF
+        protected override void OnSuspendView()
+        {
+            if (this._gauntletLayer != null) ScreenManager.SetSuspendLayer(this._gauntletLayer, true);
+        }
+
+        protected override void OnResumeView()
+        {
+            if (this._gauntletLayer != null) ScreenManager.SetSuspendLayer(this._gauntletLayer, false);
+        }
+
         private void OnManagedOptionChanged(ManagedOptions.ManagedOptionsType changedManagedOptionsType)
         {
             if (changedManagedOptionsType == ManagedOptions.ManagedOptionsType.EnableDamageTakenVisuals)
             {
-                PEHungerVM dataSource = this._dataSource;
-                if (dataSource == null)
-                {
-                    return;
-                }
-                dataSource.TakenDamageController.SetIsEnabled(BannerlordConfig.EnableDamageTakenVisuals);
+                this._dataSource?.TakenDamageController.SetIsEnabled(BannerlordConfig.EnableDamageTakenVisuals);
             }
         }
 
-        // Token: 0x06000189 RID: 393 RVA: 0x00008BD0 File Offset: 0x00006DD0
         public override void AfterStart()
         {
             base.AfterStart();
-            PEHungerVM dataSource = this._dataSource;
-            if (dataSource == null)
-            {
-                return;
-            }
-            dataSource.InitializeMainAgentPropterties();
+            this._dataSource?.InitializeMainAgentPropterties();
         }
 
-        // Token: 0x0600018A RID: 394 RVA: 0x00008BE8 File Offset: 0x00006DE8
         public override void OnMissionScreenInitialize()
         {
             base.OnMissionScreenInitialize();
-            this._isInDeployement = (base.Mission.GetMissionBehavior<BattleDeploymentHandler>() != null);
-            if (this._isInDeployement)
-            {
-                this._deploymentMissionView = base.Mission.GetMissionBehavior<DeploymentMissionView>();
-                if (this._deploymentMissionView != null)
-                {
-                    DeploymentMissionView deploymentMissionView = this._deploymentMissionView;
-                    deploymentMissionView.OnDeploymentFinish = (OnPlayerDeploymentFinishDelegate)Delegate.Combine(deploymentMissionView.OnDeploymentFinish, new OnPlayerDeploymentFinishDelegate(this.OnDeploymentFinish));
-                }
-            }
+            this._isInDeployement = base.Mission.Mode == MissionMode.Deployment;
         }
 
-        // Token: 0x0600018B RID: 395 RVA: 0x00008C57 File Offset: 0x00006E57
-        private void OnDeploymentFinish()
+        public override void OnDeploymentFinished()
         {
+            base.OnDeploymentFinished();
             this._isInDeployement = false;
-            DeploymentMissionView deploymentMissionView = this._deploymentMissionView;
-            deploymentMissionView.OnDeploymentFinish = (OnPlayerDeploymentFinishDelegate)Delegate.Remove(deploymentMissionView.OnDeploymentFinish, new OnPlayerDeploymentFinishDelegate(this.OnDeploymentFinish));
         }
 
-        // Token: 0x0600018C RID: 396 RVA: 0x00008C88 File Offset: 0x00006E88
         public override void OnMissionScreenFinalize()
         {
             base.OnMissionScreenFinalize();
             this.UnregisterInteractionEvents();
+            if (this._agentHungerBehavior != null) this._agentHungerBehavior.OnAgentHungerChanged -= this.SetHunger;
             ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Remove(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(this.OnManagedOptionChanged));
             CombatLogManager.OnGenerateCombatLog -= this.OnGenerateCombatLog;
             base.MissionScreen.RemoveLayer(this._gauntletLayer);
             this._gauntletLayer = null;
-            PEHungerVM dataSource = this._dataSource;
-            if (dataSource != null)
-            {
-                dataSource.OnFinalize();
-            }
+            this._dataSource?.OnFinalize();
             this._dataSource = null;
             this._missionMainAgentController = null;
         }
 
-        // Token: 0x0600018D RID: 397 RVA: 0x00008D09 File Offset: 0x00006F09
         public override void OnMissionScreenTick(float dt)
         {
             base.OnMissionScreenTick(dt);
+            if (this._dataSource == null) return;
             this._dataSource.IsInDeployement = this._isInDeployement;
             this._dataSource.Tick(dt);
+            this._dataSource.InteractionInterface.DisplayInteractionText = !base.MissionScreen.IsRadialMenuActive && !base.Mission.IsOrderMenuOpen;
+            this.UpdateFocusedHealth();
+        }
 
-            if (this._missionMainAgentController != null && this._missionMainAgentController.InteractionComponent != null)
+        // PE objects that can be damaged show their hit points in the interaction prompt.
+        private void UpdateFocusedHealth()
+        {
+            if (this._missionMainAgentController == null || this._missionMainAgentController.InteractionComponent == null) return;
+            IFocusable focused = this._missionMainAgentController.InteractionComponent.CurrentFocusedObject;
+            if (focused == null) return;
+
+            ScriptComponentBehavior script = focused as ScriptComponentBehavior;
+            if (script == null) return;
+
+            if (focused is PE_DestructibleWithItem)
             {
-                if (this._missionMainAgentController.InteractionComponent.CurrentFocusedObject != null)
-                {
-                    if (this._missionMainAgentController.InteractionComponent.CurrentFocusedObject is PE_Gate)
-                    {
-                        PE_Gate gate = (PE_Gate)this._missionMainAgentController.InteractionComponent.CurrentFocusedObject;
-                        if (gate.GameEntity.HasScriptOfType<PE_RepairableDestructableComponent>())
-                        {
-                            PE_RepairableDestructableComponent comp = gate.GameEntity.GetFirstScriptOfType<PE_RepairableDestructableComponent>();
-                            this._dataSource.InteractionInterface.OnFocusedHealthChanged(this._missionMainAgentController.InteractionComponent.CurrentFocusedObject, comp.HitPoint / comp.MaxHitPoint, true);
-                        }
-                    }
+                PE_DestructibleWithItem comp = script.GameEntity.GetFirstScriptOfType<PE_DestructibleWithItem>();
+                if (comp != null) this._dataSource.InteractionInterface.OnFocusedHealthChanged(focused, comp.HitPoint / comp.MaxHitPoint, true);
+                return;
+            }
 
-                    if (this._missionMainAgentController.InteractionComponent.CurrentFocusedObject is PE_NativeGate)
-                    {
-                        PE_NativeGate gate = (PE_NativeGate)this._missionMainAgentController.InteractionComponent.CurrentFocusedObject;
-                        if (gate.GameEntity.HasScriptOfType<PE_RepairableDestructableComponent>())
-                        {
-                            PE_RepairableDestructableComponent comp = gate.GameEntity.GetFirstScriptOfType<PE_RepairableDestructableComponent>();
-                            this._dataSource.InteractionInterface.OnFocusedHealthChanged(this._missionMainAgentController.InteractionComponent.CurrentFocusedObject, comp.HitPoint / comp.MaxHitPoint, true);
-                        }
-                    }
-                    if (this._missionMainAgentController.InteractionComponent.CurrentFocusedObject is PE_InventoryEntity)
-                    {
-                        PE_InventoryEntity gate = (PE_InventoryEntity)this._missionMainAgentController.InteractionComponent.CurrentFocusedObject;
-                        if (gate.GameEntity.HasScriptOfType<PE_RepairableDestructableComponent>())
-                        {
-                            PE_RepairableDestructableComponent comp = gate.GameEntity.GetFirstScriptOfType<PE_RepairableDestructableComponent>();
-                            this._dataSource.InteractionInterface.OnFocusedHealthChanged(this._missionMainAgentController.InteractionComponent.CurrentFocusedObject, comp.HitPoint / comp.MaxHitPoint, true);
-                        }
-                    }
-                    if (this._missionMainAgentController.InteractionComponent.CurrentFocusedObject is PE_RepairableDestructableComponent)
-                    {
-                        PE_RepairableDestructableComponent gate = (PE_RepairableDestructableComponent)this._missionMainAgentController.InteractionComponent.CurrentFocusedObject;
-                        if (gate.GameEntity.HasScriptOfType<PE_RepairableDestructableComponent>())
-                        {
-                            PE_RepairableDestructableComponent comp = gate.GameEntity.GetFirstScriptOfType<PE_RepairableDestructableComponent>();
-                            this._dataSource.InteractionInterface.OnFocusedHealthChanged(this._missionMainAgentController.InteractionComponent.CurrentFocusedObject, comp.HitPoint / comp.MaxHitPoint, true);
-                        }
-                    }
-                    if (this._missionMainAgentController.InteractionComponent.CurrentFocusedObject is PE_DestructibleWithItem)
-                    {
-                        PE_DestructibleWithItem gate = (PE_DestructibleWithItem)this._missionMainAgentController.InteractionComponent.CurrentFocusedObject;
-                        if (gate.GameEntity.HasScriptOfType<PE_DestructibleWithItem>())
-                        {
-                            PE_DestructibleWithItem comp = gate.GameEntity.GetFirstScriptOfType<PE_DestructibleWithItem>();
-                            this._dataSource.InteractionInterface.OnFocusedHealthChanged(this._missionMainAgentController.InteractionComponent.CurrentFocusedObject, comp.HitPoint / comp.MaxHitPoint, true);
-                        }
-                    }
-                }
+            if (focused is PE_Gate || focused is PE_NativeGate || focused is PE_InventoryEntity || focused is PE_RepairableDestructableComponent)
+            {
+                PE_RepairableDestructableComponent comp = script.GameEntity.GetFirstScriptOfType<PE_RepairableDestructableComponent>();
+                if (comp != null) this._dataSource.InteractionInterface.OnFocusedHealthChanged(focused, comp.HitPoint / comp.MaxHitPoint, true);
             }
         }
 
-        // Token: 0x0600018E RID: 398 RVA: 0x00008D2F File Offset: 0x00006F2F
         public override void OnFocusGained(Agent mainAgent, IFocusable focusableObject, bool isInteractable)
         {
             base.OnFocusGained(mainAgent, focusableObject, isInteractable);
-            PEHungerVM dataSource = this._dataSource;
-            if (dataSource == null)
-            {
-                return;
-            }
-            dataSource.OnFocusGained(mainAgent, focusableObject, isInteractable);
+            this._dataSource?.OnFocusGained(mainAgent, focusableObject, isInteractable);
         }
 
-        // Token: 0x0600018F RID: 399 RVA: 0x00008D4D File Offset: 0x00006F4D
-        public override void OnAgentInteraction(Agent userAgent, Agent agent)
+        public override void OnAgentInteraction(Agent userAgent, Agent agent, sbyte agentBoneIndex)
         {
-            base.OnAgentInteraction(userAgent, agent);
-            PEHungerVM dataSource = this._dataSource;
-            if (dataSource == null)
-            {
-                return;
-            }
-            dataSource.OnAgentInteraction(userAgent, agent);
+            base.OnAgentInteraction(userAgent, agent, agentBoneIndex);
+            this._dataSource?.OnAgentInteraction(userAgent, agent, agentBoneIndex);
         }
 
-        // Token: 0x06000190 RID: 400 RVA: 0x00008D69 File Offset: 0x00006F69
         public override void OnFocusLost(Agent agent, IFocusable focusableObject)
         {
             base.OnFocusLost(agent, focusableObject);
-            PEHungerVM dataSource = this._dataSource;
-            if (dataSource == null)
-            {
-                return;
-            }
-            dataSource.OnFocusLost(agent, focusableObject);
+            this._dataSource?.OnFocusLost(agent, focusableObject);
         }
 
-        // Token: 0x06000191 RID: 401 RVA: 0x00008D85 File Offset: 0x00006F85
         public override void OnAgentDeleted(Agent affectedAgent)
         {
-            PEHungerVM dataSource = this._dataSource;
-            if (dataSource == null)
-            {
-                return;
-            }
-            dataSource.OnAgentDeleted(affectedAgent);
+            this._dataSource?.OnAgentDeleted(affectedAgent);
         }
 
-        // Token: 0x06000192 RID: 402 RVA: 0x00008D98 File Offset: 0x00006F98
         public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow killingBlow)
         {
-            PEHungerVM dataSource = this._dataSource;
-            if (dataSource == null)
-            {
-                return;
-            }
-            dataSource.OnAgentRemoved(affectedAgent);
+            this._dataSource?.OnAgentRemoved(affectedAgent);
         }
 
-        // Token: 0x06000193 RID: 403 RVA: 0x00008DAC File Offset: 0x00006FAC
         private void OnGenerateCombatLog(CombatLogData logData)
         {
-            if (logData.IsVictimAgentMine && logData.TotalDamage > 0 && logData.BodyPartHit != BoneBodyPartType.None)
+            if (logData.IsVictimAgentMine && logData.TotalDamage > 0)
             {
-                PEHungerVM dataSource = this._dataSource;
-                if (dataSource == null)
-                {
-                    return;
-                }
-                dataSource.OnMainAgentHit(logData.TotalDamage, (float)(logData.IsRangedAttack ? 1 : 0));
+                this._dataSource?.OnMainAgentHit(logData.TotalDamage, logData.IsRangedAttack ? 1 : 0);
+            }
+            else if (logData.IsAttackerAgentMine && logData.ReflectedDamage > 0)
+            {
+                this._dataSource?.OnMainAgentHit(logData.ReflectedDamage, logData.IsRangedAttack ? 1 : 0);
             }
         }
 
-        // Token: 0x06000194 RID: 404 RVA: 0x00008DF8 File Offset: 0x00006FF8
         private void RegisterInteractionEvents()
         {
             this._missionMainAgentController = base.Mission.GetMissionBehavior<MissionMainAgentController>();
@@ -277,9 +221,12 @@ namespace PersistentEmpires.Views.Views
                 this._missionMainAgentEquipmentControllerView.OnEquipmentDropInteractionViewToggled += this._dataSource.OnEquipmentInteractionViewToggled;
                 this._missionMainAgentEquipmentControllerView.OnEquipmentEquipInteractionViewToggled += this._dataSource.OnEquipmentInteractionViewToggled;
             }
+            this._missionHintLogic = base.Mission.GetMissionBehavior<MissionHintLogic>();
+            if (this._missionHintLogic != null)
+            {
+                this._missionHintLogic.OnActiveHintChanged += this._dataSource.InteractionInterface.OnActiveMissionHintChanged;
+            }
         }
-
-
 
         private void UnregisterInteractionEvents()
         {
@@ -294,32 +241,25 @@ namespace PersistentEmpires.Views.Views
                 this._missionMainAgentEquipmentControllerView.OnEquipmentDropInteractionViewToggled -= this._dataSource.OnEquipmentInteractionViewToggled;
                 this._missionMainAgentEquipmentControllerView.OnEquipmentEquipInteractionViewToggled -= this._dataSource.OnEquipmentInteractionViewToggled;
             }
+            this._missionHintLogic = base.Mission.GetMissionBehavior<MissionHintLogic>();
+            if (this._missionHintLogic != null)
+            {
+                this._missionHintLogic.OnActiveHintChanged -= this._dataSource.InteractionInterface.OnActiveMissionHintChanged;
+            }
         }
 
-        // Token: 0x06000196 RID: 406 RVA: 0x00008F95 File Offset: 0x00007195
         public override void OnPhotoModeActivated()
         {
             base.OnPhotoModeActivated();
-            this._gauntletLayer.UIContext.ContextAlpha = 0f;
+            if (this._gauntletLayer != null) this._gauntletLayer.UIContext.ContextAlpha = 0f;
+            this.UnregisterInteractionEvents();
         }
 
-        // Token: 0x06000197 RID: 407 RVA: 0x00008FB2 File Offset: 0x000071B2
         public override void OnPhotoModeDeactivated()
         {
             base.OnPhotoModeDeactivated();
-            this._gauntletLayer.UIContext.ContextAlpha = 1f;
+            if (this._gauntletLayer != null) this._gauntletLayer.UIContext.ContextAlpha = 1f;
+            this.RegisterInteractionEvents();
         }
-        // Token: 0x040000C3 RID: 195
-        private MissionMainAgentController _missionMainAgentController;
-
-        // Token: 0x040000C4 RID: 196
-        private MissionGauntletMainAgentEquipmentControllerView _missionMainAgentEquipmentControllerView;
-
-        // Token: 0x040000C5 RID: 197
-        private DeploymentMissionView _deploymentMissionView;
-
-        // Token: 0x040000C6 RID: 198
-        private bool _isInDeployement;
-        private AgentHungerBehavior _agentHungerBehavior;
     }
 }

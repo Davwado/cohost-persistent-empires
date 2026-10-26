@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.SceneScripts;
+﻿using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
+using PersistentEmpiresLib.SceneScripts;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.FlagMarker.Targets;
@@ -58,8 +59,7 @@ namespace PersistentEmpires.Views.ViewsVM.MapMarkers
         public void UpdateBanner()
         {
             Banner banner = this._castleBanner.GetOwnerFaction().banner;
-            BannerCode bannercode = BannerCode.CreateFrom(banner);
-            this.BannerImage = new ImageIdentifierVM(bannercode, true);
+                        this.BannerImage = PEImageIdentifiers.Banner(banner);
         }
     }
 }

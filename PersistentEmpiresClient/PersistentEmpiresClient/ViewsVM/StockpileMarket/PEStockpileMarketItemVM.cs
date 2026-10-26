@@ -1,5 +1,6 @@
 ﻿using PersistentEmpiresLib.SceneScripts;
 using System;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -19,7 +20,7 @@ namespace PersistentEmpires.Views.ViewsVM.StockpileMarket
         public PEStockpileMarketItemVM(MarketItem marketItem, int itemIndex, Action<PEStockpileMarketItemVM> executeSelect)
         {
             this.MarketItem = marketItem;
-            this.ImageIdentifier = new ImageIdentifierVM(marketItem.Item);
+            this.ImageIdentifier = PEImageIdentifiers.Item(marketItem.Item);
             this.ItemIndex = itemIndex;
             this.Stock = marketItem.Stock;
             this.Constant = marketItem.Constant;

@@ -4,6 +4,7 @@ using PersistentEmpiresLib.Factions;
 using PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors;
 using PersistentEmpiresLib.SceneScripts;
 using System;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
@@ -181,8 +182,7 @@ namespace PersistentEmpires.Views.Views
         private void OnFactionUpdate(int factionIndex, Faction faction)
         {
             this._dataSource.Factions[factionIndex].FactionName = faction.name;
-            BannerCode bannerCode = BannerCode.CreateFrom(faction.banner);
-            this._dataSource.Factions[factionIndex].BannerImage = new ImageIdentifierVM(bannerCode, true);
+                        this._dataSource.Factions[factionIndex].BannerImage = PEImageIdentifiers.Banner(faction.banner);
             this._dataSource.Factions[factionIndex].RefreshValues();
         }
         private void InitializeLayer()
@@ -200,7 +200,7 @@ namespace PersistentEmpires.Views.Views
             {
                 this.OnFactionAdded(this._factionsBehavior.Factions[key], key);
             }
-            this._gauntletLayer = new GauntletLayer(2);
+            this._gauntletLayer = new GauntletLayer("PETabMenuView", 2);
             this._gauntletLayer.LoadMovie("PETabMenu", this._dataSource);
             this._gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("ScoreboardHotKeyCategory"));
 

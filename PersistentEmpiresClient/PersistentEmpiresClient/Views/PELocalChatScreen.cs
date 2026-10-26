@@ -109,7 +109,7 @@ namespace PersistentEmpires.Views.Views
         {
             if (this.IsActive) return;
 
-            this._gauntletLayer = new GauntletLayer(this.ViewOrderPriority);
+            this._gauntletLayer = new GauntletLayer("PELocalChatScreen", this.ViewOrderPriority);
             this._gauntletLayer.IsFocusLayer = true;
 
             Agent.EventControlFlag controls = 0;
@@ -126,7 +126,7 @@ namespace PersistentEmpires.Views.Views
             this._gauntletLayer.IsFocusLayer = true;
             this._gauntletLayer.InputRestrictions.SetInputRestrictions(true, InputUsageMask.All);
             Widget textWidget = this._gauntletLayer.UIContext.Root.FindChild("EditableLocalChat", true);
-            this._gauntletLayer.UIContext.EventManager.SetWidgetFocused(textWidget);
+            this._gauntletLayer.UIContext.EventManager.FocusedWidget = (textWidget);
             this._gauntletLayer.IsFocusLayer = true;
             ScreenManager.TrySetFocus(this._gauntletLayer);
             this.IsActive = true;

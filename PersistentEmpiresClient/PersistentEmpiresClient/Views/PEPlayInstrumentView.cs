@@ -19,7 +19,7 @@ namespace PersistentEmpires.Views.Views
         public override void OnMissionTick(float dt)
         {
             base.OnMissionTick(dt);
-            GameKey defendClick = HotKeyManager.GetCategory("CombatHotKeyCategory").GetGameKey("Defend");
+            GameKey defendClick = HotKeyManager.GetCategory("CombatHotKeyCategory").GetGameKey(TaleWorlds.MountAndBlade.CombatHotKeyCategory.Defend);
             if (base.MissionScreen.SceneLayer.Input.IsGameKeyPressed(defendClick.Id))
             {
                 this.RequestedStartPlaying = this._instrumentsBehavior.RequestStartPlaying();

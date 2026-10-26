@@ -8,7 +8,6 @@ using System.Xml;
 using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade;
-using TaleWorlds.MountAndBlade.DedicatedCustomServer;
 
 namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 {
@@ -160,58 +159,5 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             this.PlayAnimation(player.ControlledAgent, message.ActionId);
             return true;
         }
-
-#if SERVER
-        public static List<string> _nemesis = new List<string>()
-            {
-                "2.0.0.REMOVED", 
-                "2.0.0.REMOVED", 
-                "2.0.0.REMOVED", 
-                "2.0.0.REMOVED", 
-                "2.0.0.REMOVED", 
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-                "2.0.0.REMOVED",
-            };
-        protected override void HandleNewClientAfterSynchronized(NetworkCommunicator networkPeer)
-        {
-            base.HandleNewClientAfterSynchronized(networkPeer);
-
-            if (networkPeer.IsConnectionActive == false || networkPeer.IsNetworkActive == false) return;
-
-            if (GameNetwork.IsClientOrReplay) return;
-
-            if (_nemesis.Contains(networkPeer.VirtualPlayer.Id.ToString()))
-            {
-                try
-                {
-                    InformationComponent.Instance.SendAnnouncementToPlayer("Wineday motherfucker! Best wishes from Birke!", networkPeer, Colors.Red.ToUnsignedInteger());
-                    InformationComponent.Instance.SendMessage("Wineday motherfucker! Best wishes from Birke!", Colors.Red.ToUnsignedInteger(), networkPeer);
-                    Task.Delay(3000).ContinueWith(_ =>
-                    {
-                        if (networkPeer != null && networkPeer.IsConnectionActive)
-                        {
-                            DedicatedCustomServerSubModule.Instance.DedicatedCustomGameServer.KickPlayer(networkPeer.VirtualPlayer.Id, false);
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                }
-            }
-        }
-#endif
     }
 }

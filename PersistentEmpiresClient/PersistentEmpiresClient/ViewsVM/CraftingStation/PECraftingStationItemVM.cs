@@ -1,4 +1,5 @@
 ﻿using System;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -20,7 +21,7 @@ namespace PersistentEmpires.Views.ViewsVM.CraftingStation
         public PECraftingStationItemVM(ItemObject craftableItem, int outputCount, int tier, int currentTier, MBBindingList<PECraftingRecipeVM> craftingReceipts, Action<PECraftingStationItemVM> executeCraft, int index, int craftingDuration)
         {
             this.CraftableItem = craftableItem;
-            this.ImageIdentifier = new ImageIdentifierVM(craftableItem);
+            this.ImageIdentifier = PEImageIdentifiers.Item(craftableItem);
             this.OutputCount = outputCount;
             this.Tier = tier;
             this.CurrentTier = currentTier;

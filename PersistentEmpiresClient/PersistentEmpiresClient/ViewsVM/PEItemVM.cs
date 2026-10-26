@@ -1,4 +1,5 @@
 ﻿using System;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -19,11 +20,11 @@ namespace PersistentEmpires.Views.ViewsVM
             this.Item = item;
             if (item != null)
             {
-                this.ImageIdentifier = new ImageIdentifierVM(item);
+                this.ImageIdentifier = PEImageIdentifiers.Item(item);
             }
             else
             {
-                this.ImageIdentifier = new ImageIdentifierVM();
+                this.ImageIdentifier = PEImageIdentifiers.Empty();
             }
             this.Count = count;
             this.DropTag = dropTag;
@@ -38,13 +39,13 @@ namespace PersistentEmpires.Views.ViewsVM
             {
                 this.Count = 0;
                 this.Item = null;
-                this.ImageIdentifier = new ImageIdentifierVM();
+                this.ImageIdentifier = PEImageIdentifiers.Empty();
             }
             else
             {
                 this.Count = 1;
                 this.Item = equipmentItem.Item;
-                this.ImageIdentifier = new ImageIdentifierVM(equipmentItem.Item);
+                this.ImageIdentifier = PEImageIdentifiers.Item(equipmentItem.Item);
             }
             this.DropTag = dropTag;
             this._executeTransfer = executeTranfser;
@@ -55,7 +56,7 @@ namespace PersistentEmpires.Views.ViewsVM
         {
             this.Count = 0;
             this.Item = null;
-            this.ImageIdentifier = new ImageIdentifierVM();
+            this.ImageIdentifier = PEImageIdentifiers.Empty();
             this.DropTag = dropTag;
             this._executeTransfer = executeTranfser;
         }
@@ -64,11 +65,11 @@ namespace PersistentEmpires.Views.ViewsVM
         {
             if (this.Item != null)
             {
-                this.ImageIdentifier = new ImageIdentifierVM(this.Item);
+                this.ImageIdentifier = PEImageIdentifiers.Item(this.Item);
             }
             else
             {
-                this.ImageIdentifier = new ImageIdentifierVM();
+                this.ImageIdentifier = PEImageIdentifiers.Empty();
             }
         }
         public string DropTag { get; set; }

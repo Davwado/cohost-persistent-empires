@@ -1,4 +1,5 @@
-﻿using TaleWorlds.Core;
+﻿using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 
 namespace PersistentEmpires.Views.ViewsVM.CraftingStation
@@ -11,7 +12,7 @@ namespace PersistentEmpires.Views.ViewsVM.CraftingStation
         public PECraftingRecipeVM(ItemObject item, int count)
         {
             this.Item = item;
-            this.ImageIdentifier = new ImageIdentifierVM(item);
+            this.ImageIdentifier = PEImageIdentifiers.Item(item);
             this.Count = count;
         }
         public void ExecuteHoverStart()

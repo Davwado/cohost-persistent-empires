@@ -369,7 +369,7 @@ namespace PersistentEmpires.Views.Views
                 Material tableauMaterial = Material.GetFromResource("agent_label_with_tableau");
                 if (agent.Origin.Banner != null || peerBanner != null)
                 {
-                    texture = (peerBanner ?? agent.Origin.Banner).GetTableauTextureSmall(null);
+                    texture = (peerBanner ?? agent.Origin.Banner).GetTableauTextureSmall(default(TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails.BannerDebugInfo), null);
                 }
                 if (copy != null && tableauMaterial != null)
                 {
@@ -388,7 +388,7 @@ namespace PersistentEmpires.Views.Views
                         };
                         if (agent.Origin.Banner != null || peerBanner != null)
                         {
-                            texture = (peerBanner ?? agent.Origin.Banner).GetTableauTextureSmall(setAction);
+                            texture = (peerBanner ?? agent.Origin.Banner).GetTableauTextureSmall(default(TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails.BannerDebugInfo), setAction);
                         }
                         tableauMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, fromResource);
                         this._labelMaterials.Add(texture, tableauMaterial);
@@ -468,7 +468,7 @@ namespace PersistentEmpires.Views.Views
         }
 
         // Token: 0x060002FF RID: 767 RVA: 0x0001A60C File Offset: 0x0001880C
-        private void OnMainAgentChanged(object sender, PropertyChangedEventArgs e)
+        private void OnMainAgentChanged(Agent oldAgent)
         {
             foreach (Agent agent in this._agentMeshes.Keys)
             {
