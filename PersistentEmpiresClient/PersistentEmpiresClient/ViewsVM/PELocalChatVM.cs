@@ -30,12 +30,7 @@ namespace PersistentEmpires.Views.ViewsVM
                         OnPropertyChangedWithValue(value, "TextInput");
                     }
 
-                    if(!string.IsNullOrEmpty(value))
-                    {
-                        GameNetwork.BeginModuleEventAsClient();
-                        GameNetwork.WriteMessage(new PlayerIsTypingMessage());
-                        GameNetwork.EndModuleEventAsClient();
-                    }
+                    // No "is typing" message: it is not registered in this build (see PEChatBox.cs).
                 }
             }
         }

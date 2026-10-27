@@ -131,12 +131,8 @@ namespace PersistentEmpires.Views.Views
                 
                 if (mpChatVM != null)
                 {
-                    if (e.PropertyName == "WrittenText")
-                    {
-                        GameNetwork.BeginModuleEventAsClient();
-                        GameNetwork.WriteMessage(new PlayerIsTypingMessage());
-                        GameNetwork.EndModuleEventAsClient();
-                    }
+                    // The "is typing" indicator is not part of this build's network message set (the Workshop build has none, and
+                    // message ids come from the sorted type names), so nothing is sent here. Sending it threw on every keystroke.
                 }
             }
             catch(Exception ex)
