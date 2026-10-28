@@ -23,6 +23,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         public static bool CanUseSuicide = true;
         // false = only admins can change their clothing colours
         public static bool CanUseChangeColor = true;
+        // set by AdminServerBehavior: true when this player may change colours (everyone, an admin, or on ColorWhitelist.txt)
+        public static Func<NetworkCommunicator, bool> CanChangeColorFor = (p) => CanUseChangeColor;
 #endif
 
         public void HandleAdminPanelClick()
