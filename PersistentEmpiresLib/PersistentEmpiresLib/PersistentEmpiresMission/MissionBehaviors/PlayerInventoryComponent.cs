@@ -391,6 +391,19 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         private bool HandleRequestDropItemFromInventory(NetworkCommunicator player, RequestDropItemFromInventory message)
         {
+            try
+            {
+                return DropItemFromInventory(player, message);
+            }
+            catch (Exception ex)
+            {
+                Debug.Print("** PE ERROR ** dropping item from inventory (" + message.DropTag + "): " + ex);
+                return false;
+            }
+        }
+
+        private bool DropItemFromInventory(NetworkCommunicator player, RequestDropItemFromInventory message)
+        {
             if (player.ControlledAgent == null || player.ControlledAgent.IsActive() == false) return false;
             string[] dropTag = message.DropTag.Split('_');
             string inventory = string.Join("_", dropTag.Take(dropTag.Length - 1));

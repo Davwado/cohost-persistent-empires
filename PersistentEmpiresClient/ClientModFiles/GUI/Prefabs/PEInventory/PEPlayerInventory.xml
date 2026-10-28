@@ -36,7 +36,7 @@
           </Children>
         </Widget>
 
-        <Widget HorizontalAlignment="Center" SuggestedHeight="350" SuggestedWidth="800" PositionYOffset="-120" MarginBottom="50">
+        <Widget HorizontalAlignment="Center" SuggestedHeight="350" SuggestedWidth="800" PositionYOffset="-120" MarginBottom="50" AcceptDrop="true" Command.Drop="ExecuteDropItem">
           <Children>
             <Standard.Window Parameter.Title="">
               <Children>

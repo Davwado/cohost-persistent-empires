@@ -75,6 +75,7 @@ namespace PersistentEmpires.Views.Views
         {
             this.IsActive = false;
             this._gauntletLayer.InputRestrictions.ResetInputRestrictions();
+            ScreenManager.TryLoseFocus(this._gauntletLayer);
             base.MissionScreen.RemoveLayer(this._gauntletLayer);
             this._gauntletLayer = null;
         }

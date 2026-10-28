@@ -198,6 +198,10 @@ namespace PersistentEmpiresLib.SceneScripts
                     AgentHelpers.RespawnAgentOnPlaceForFaction(userAgent, joinedTo == -1 ? null : factionsBehavior.Factions[joinedTo], null, heroClass.HeroCharacter);
                     LoggerHelper.LogAnAction(userAgent.MissionPeer.GetNetworkPeer(), LogAction.PlayerClassChange, null, new object[] { heroClass.HeroCharacter });
                     factionsBehavior.SetPlayerFaction(player, joinedTo, joinedFrom);
+                    // Save now: the class (and gold spent) otherwise only reaches the database on the next autosave or disconnect,
+                    // so a server restart in between put the player back to the default class.
+                    try { SaveSystemBehavior.HandleCreateOrSavePlayer(player); }
+                    catch (System.Exception ex) { Debug.Print("** PE ERROR ** saving player after class change: " + ex); }
                 }
             }
 
