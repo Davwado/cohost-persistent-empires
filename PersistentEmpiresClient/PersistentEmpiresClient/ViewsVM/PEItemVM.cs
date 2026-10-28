@@ -8,7 +8,7 @@ namespace PersistentEmpires.Views.ViewsVM
     public class PEItemVM : ViewModel
     {
         public ItemObject Item;
-        private ImageIdentifierVM _imageIdentifierVM;
+        private ItemImageIdentifierVM _imageIdentifierVM;
         private int _count;
         private Action<PEItemVM, PEItemVM> _executeTransfer;
         private Action<PEItemVM> _handleClickItem;
@@ -114,7 +114,7 @@ namespace PersistentEmpires.Views.ViewsVM
         }
 
         [DataSourceProperty]
-        public ImageIdentifierVM ImageIdentifier
+        public ItemImageIdentifierVM ImageIdentifier
         {
             get => this._imageIdentifierVM;
             set

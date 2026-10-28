@@ -10,7 +10,7 @@ namespace PersistentEmpires.Views.ViewsVM.CraftingStation
         public int CurrentTier;
         public ItemObject CraftableItem;
         public int CraftableIndex;
-        private ImageIdentifierVM _imageIdentifier;
+        private ItemImageIdentifierVM _imageIdentifier;
         private int _outputCount;
         private int _tier;
         private MBBindingList<PECraftingRecipeVM> _craftingReceipts;
@@ -83,7 +83,7 @@ namespace PersistentEmpires.Views.ViewsVM.CraftingStation
 
 
         [DataSourceProperty]
-        public ImageIdentifierVM ImageIdentifier
+        public ItemImageIdentifierVM ImageIdentifier
         {
             get => this._imageIdentifier;
             set

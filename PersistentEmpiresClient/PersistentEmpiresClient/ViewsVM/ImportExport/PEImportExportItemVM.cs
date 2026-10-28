@@ -8,7 +8,7 @@ namespace PersistentEmpires.Views.ViewsVM.ImportExport
     public class PEImportExportItemVM : ViewModel
     {
         public ItemObject Item;
-        private ImageIdentifierVM _imageIdentifier;
+        private ItemImageIdentifierVM _imageIdentifier;
         private int _exportPrice;
         private int _importPrice;
         private Action<PEImportExportItemVM> _executeSelect;
@@ -88,7 +88,7 @@ namespace PersistentEmpires.Views.ViewsVM.ImportExport
             }
         }
         [DataSourceProperty]
-        public ImageIdentifierVM ImageIdentifier
+        public ItemImageIdentifierVM ImageIdentifier
         {
             get => this._imageIdentifier;
             set

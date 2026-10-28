@@ -10,7 +10,7 @@ namespace PersistentEmpires.Views.ViewsVM.MapMarkers
     {
         private PE_CastleBanner _castleBanner;
         private string _castleName;
-        private ImageIdentifierVM _bannerImage;
+        private BannerImageIdentifierVM _bannerImage;
 
         public PE_CastleBanner GetBanner()
         {
@@ -47,7 +47,7 @@ namespace PersistentEmpires.Views.ViewsVM.MapMarkers
 
 
         [DataSourceProperty]
-        public ImageIdentifierVM BannerImage
+        public BannerImageIdentifierVM BannerImage
         {
             get => _bannerImage;
             set

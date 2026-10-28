@@ -8,7 +8,7 @@ namespace PersistentEmpires.Views.ViewsVM.CraftingStation
     {
         public ItemObject Item;
         private int _count;
-        private ImageIdentifierVM _imageIdentifier;
+        private ItemImageIdentifierVM _imageIdentifier;
         public PECraftingRecipeVM(ItemObject item, int count)
         {
             this.Item = item;
@@ -42,7 +42,7 @@ namespace PersistentEmpires.Views.ViewsVM.CraftingStation
             }
         }
         [DataSourceProperty]
-        public ImageIdentifierVM ImageIdentifier
+        public ItemImageIdentifierVM ImageIdentifier
         {
             get => this._imageIdentifier;
             set

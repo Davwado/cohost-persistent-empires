@@ -7,25 +7,25 @@ namespace PersistentEmpires.Views
     // These keep the call sites in the views as one-liners.
     public static class PEImageIdentifiers
     {
-        public static ImageIdentifierVM Item(ItemObject item)
+        public static ItemImageIdentifierVM Item(ItemObject item)
         {
             return new ItemImageIdentifierVM(item);
         }
 
-        public static ImageIdentifierVM Empty()
+        public static ItemImageIdentifierVM Empty()
         {
             return new ItemImageIdentifierVM(null);
         }
 
-        public static ImageIdentifierVM Banner(Banner banner)
+        public static BannerImageIdentifierVM Banner(Banner banner)
         {
-            if (banner == null) return Empty();
+            if (banner == null) banner = new Banner();
             return new BannerImageIdentifierVM(banner, true);
         }
 
-        public static ImageIdentifierVM Banner(string bannerCode)
+        public static BannerImageIdentifierVM Banner(string bannerCode)
         {
-            if (string.IsNullOrEmpty(bannerCode)) return Empty();
+            if (string.IsNullOrEmpty(bannerCode)) return Banner(new Banner());
             return new BannerImageIdentifierVM(new Banner(bannerCode), true);
         }
     }

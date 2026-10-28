@@ -165,11 +165,43 @@ namespace PersistentEmpiresLib.Helpers
                 }
             }
             Vec3 zero = Vec3.Zero;
-            var original = typeof(Mission).GetMethod("SpawnWeaponAux", BindingFlags.NonPublic | BindingFlags.Instance);
-            original.Invoke(Mission.Current, new object[] {
-                gameEntity, weapon, spawnFlags, zero, zero, hasLifeTime
-            });
+            MethodInfo spawnAux = GetSpawnWeaponAuxMethod();
+            ParameterInfo[] parameters = spawnAux.GetParameters();
+            object[] args = new object[parameters.Length];
+            args[0] = parameters[0].ParameterType == typeof(WeakGameEntity) ? (object)gameEntity.WeakEntity : gameEntity;
+            args[1] = weapon;
+            args[2] = spawnFlags;
+            args[3] = zero;
+            args[4] = zero;
+            for (int i = 5; i < parameters.Length; i++)
+            {
+                if (i == 5 && parameters[i].ParameterType == typeof(bool)) args[i] = hasLifeTime;           // hasLifeTime
+                else args[i] = parameters[i].HasDefaultValue ? parameters[i].DefaultValue : null;          // spawnedOnACorpse = false, ...
+            }
+            spawnAux.Invoke(Mission.Current, args);
             return gameEntity;
+        }
+
+        // Mission.SpawnWeaponAux is private and its signature changed in 1.4.x (WeakGameEntity, an extra optional bool). Looking it up by
+        // name only and passing the old argument list threw on every call, so nothing could be dropped or spawned through this helper.
+        private static MethodInfo _spawnWeaponAuxMI;
+        private static MethodInfo GetSpawnWeaponAuxMethod()
+        {
+            if (_spawnWeaponAuxMI != null) return _spawnWeaponAuxMI;
+            foreach (MethodInfo m in typeof(Mission).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+            {
+                if (m.Name != "SpawnWeaponAux") continue;
+                ParameterInfo[] p = m.GetParameters();
+                if (p.Length < 5) continue;
+                bool entityOk = p[0].ParameterType == typeof(GameEntity) || p[0].ParameterType == typeof(WeakGameEntity);
+                bool weaponOk = p[1].ParameterType == typeof(MissionWeapon) || (p[1].ParameterType.IsByRef && p[1].ParameterType.GetElementType() == typeof(MissionWeapon));
+                if (entityOk && weaponOk && p[2].ParameterType == typeof(Mission.WeaponSpawnFlags) && p[3].ParameterType == typeof(Vec3) && p[4].ParameterType == typeof(Vec3))
+                {
+                    _spawnWeaponAuxMI = m;
+                    return m;
+                }
+            }
+            throw new System.MissingMethodException("Could not find a compatible Mission.SpawnWeaponAux overload");
         }
     }
 }

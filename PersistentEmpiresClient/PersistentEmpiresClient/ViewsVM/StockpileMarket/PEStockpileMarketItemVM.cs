@@ -11,7 +11,7 @@ namespace PersistentEmpires.Views.ViewsVM.StockpileMarket
         public MarketItem MarketItem;
         public int ItemIndex;
 
-        private ImageIdentifierVM _imageIdentifier;
+        private ItemImageIdentifierVM _imageIdentifier;
         private bool _isSelected;
         private string _itemName;
         private int _stock;
@@ -38,7 +38,7 @@ namespace PersistentEmpires.Views.ViewsVM.StockpileMarket
         {
             get => this.MarketItem.SellPrice();
         }
-        public ImageIdentifierVM ImageIdentifier
+        public ItemImageIdentifierVM ImageIdentifier
         {
             get => this._imageIdentifier;
             set

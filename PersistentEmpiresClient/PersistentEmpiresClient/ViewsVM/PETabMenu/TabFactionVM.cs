@@ -86,7 +86,7 @@ namespace PersistentEmpires.Views.ViewsVM.PETabMenu
             }
         }
         [DataSourceProperty]
-        public ImageIdentifierVM BannerImage
+        public BannerImageIdentifierVM BannerImage
         {
             get => _bannerImage;
             set
@@ -136,7 +136,7 @@ namespace PersistentEmpires.Views.ViewsVM.PETabMenu
 
 
         private String _factionName;
-        private ImageIdentifierVM _bannerImage;
+        private BannerImageIdentifierVM _bannerImage;
         private MBBindingList<TabPlayerVM> _members;
         private bool _isSelected;
         private MBBindingList<CastleVM> _castles;
