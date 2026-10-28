@@ -31,6 +31,7 @@ namespace PersistentEmpiresLib
         public bool CanUsePoll = false;
         public bool CanUseDiplomacy = false;
         public bool CanUseSuicide = false;
+        public bool CanUseChangeColors = false;
         public Vec3 LoadedDbPosition;
         public Equipment LoadedSpawnEquipment;
         public string AttachToAgentId { get; set; } 
@@ -201,6 +202,11 @@ namespace PersistentEmpiresLib
         internal void SetCanUseDiplomacy(bool canUseDiplomacy)
         {
             CanUseDiplomacy = canUseDiplomacy;
+        }
+
+        internal void SetCanUseChangeColors(bool canUseChangeColors)
+        {
+            CanUseChangeColors = canUseChangeColors;
         }
 
         internal void SetCanUseSuicide(bool canUseSuicide)

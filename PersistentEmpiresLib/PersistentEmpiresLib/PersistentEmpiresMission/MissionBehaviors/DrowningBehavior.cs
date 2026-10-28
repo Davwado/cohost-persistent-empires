@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -14,6 +15,52 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         public long LastCheckedAt = 0;
         public long Duration = 10;
+
+        // Horses and other non-human agents in the water are removed rather than hurt (a mount with a rider dies, a loose one fades out)
+        private readonly object _lock = new object();
+        private readonly List<Agent> _agentsToRemove = new List<Agent>();
+
+        public override void OnAgentHit(Agent affectedAgent, Agent affectorAgent, in MissionWeapon affectorWeapon, in Blow blow, in AttackCollisionData attackCollisionData)
+        {
+            if (this.IsSetProperly && affectedAgent != null && affectedAgent.IsActive() && !affectedAgent.IsHuman && IsInWater(affectedAgent))
+            {
+                if (affectedAgent.Health < (float)blow.InflictedDamage)
+                {
+                    affectedAgent.Health += blow.InflictedDamage;
+                }
+                lock (_lock)
+                {
+                    _agentsToRemove.Add(affectedAgent);
+                }
+            }
+        }
+
+        private bool IsInWater(Agent agent)
+        {
+            return this.IsSetProperly && agent.IsActive() && agent.Position.Z < UpperLimit && agent.Position.Z > LowerLimit;
+        }
+
+        private void RemoveNoneHumanAgent(Agent agent)
+        {
+            if (agent == null || !agent.IsActive()) return;
+            if (agent.RiderAgent != null)
+            {
+                Blow b = new Blow(agent.Index);
+                b.DamageType = TaleWorlds.Core.DamageTypes.Blunt;
+                b.BoneIndex = -1;
+                b.GlobalPosition = agent.Position;
+                b.BaseMagnitude = 1f;
+                b.InflictedDamage = 400;
+                b.SwingDirection = agent.LookDirection;
+                b.Direction = agent.LookDirection;
+                b.WeaponRecord.FillAsMeleeBlow(null, null, -1, -1);
+                agent.Die(b);
+            }
+            else
+            {
+                agent.FadeOut(false, false);
+            }
+        }
 
         public override void AfterStart()
         {
@@ -34,13 +81,29 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         public override void OnMissionTick(float dt)
         {
+            if (_agentsToRemove.Count > 0)
+            {
+                List<Agent> toRemove;
+                lock (_lock)
+                {
+                    toRemove = _agentsToRemove.ToList();
+                    _agentsToRemove.Clear();
+                }
+                foreach (Agent a in toRemove) RemoveNoneHumanAgent(a);
+                return;
+            }
             if ((this.LastCheckedAt + this.Duration < DateTimeOffset.UtcNow.ToUnixTimeSeconds()) && this.IsSetProperly)
             {
                 this.LastCheckedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 foreach (Agent agent in base.Mission.Agents.ToList())
                 {
-                    if (agent.IsActive() && agent.Position.Z < UpperLimit && agent.Position.Z > LowerLimit)
+                    if (IsInWater(agent))
                     {
+                        if (!agent.IsHuman)
+                        {
+                            RemoveNoneHumanAgent(agent);
+                            continue;
+                        }
                         Blow blow = new Blow(agent.Index);
                         blow.DamageType = TaleWorlds.Core.DamageTypes.Pierce;
                         blow.BoneIndex = agent.Monster.HeadLookDirectionBoneIndex;

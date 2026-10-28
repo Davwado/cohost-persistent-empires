@@ -109,6 +109,12 @@ namespace PersistentEmpires.Views.Views
                 Mission.GetMissionBehavior<PEAdminTeleportView>().OnOpen();
             }));
 
+            menuItemVm.Add(new PEAdminMenuItemVM(new TextObject(AdminClientBehavior.IsVisible ? "Become invisible" : "Become visible"), () =>
+            {
+                CloseAdminPanel();
+                this._adminBehavior.ToggleInvisible();
+            }));
+
             return menuItemVm;
         }
 
