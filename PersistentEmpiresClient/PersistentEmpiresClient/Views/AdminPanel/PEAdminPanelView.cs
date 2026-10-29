@@ -109,7 +109,7 @@ namespace PersistentEmpires.Views.Views
                 Mission.GetMissionBehavior<PEAdminTeleportView>().OnOpen();
             }));
 
-            menuItemVm.Add(new PEAdminMenuItemVM(new TextObject(AdminClientBehavior.IsVisible ? "Become invisible" : "Become visible"), () =>
+            menuItemVm.Add(new PEAdminMenuItemVM(GameTexts.FindText(AdminClientBehavior.IsVisible ? "EscapeMenBecomeInvisible" : "EscapeMenBecomeVisible", null), () =>
             {
                 CloseAdminPanel();
                 this._adminBehavior.ToggleInvisible();

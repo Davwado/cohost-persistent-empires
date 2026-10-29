@@ -533,6 +533,36 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             }
         }
 
+        // Saves every spawned player once. Called when the server is told to stop (GracefulShutdownBehavior), and again,
+        // harmlessly, from the process-exit hook.
+        public static volatile bool ShutdownSaveDone = false;
+        private static readonly object _exitSaveLock = new object();
+
+        public static void SaveAllPlayersOnExit()
+        {
+            lock (_exitSaveLock)
+            {
+                if (ShutdownSaveDone) return;
+                ShutdownSaveDone = true;
+                foreach (NetworkCommunicator peer in GameNetwork.NetworkPeers.ToList())
+                {
+                    try
+                    {
+                        var persistentEmpireRepresentative = peer.GetComponent<PersistentEmpireRepresentative>();
+                        if (persistentEmpireRepresentative != null && peer.ControlledAgent != null && persistentEmpireRepresentative.IsFirstAgentSpawned)
+                        {
+                            HandleCreateOrSavePlayer(peer);
+                            HandleCreateOrSavePlayerInventory(peer);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Print("** PE ERROR ** saving a player on exit: " + ex.Message);
+                    }
+                }
+            }
+        }
+
         private void HandleExceptionalExit(object sender, UnhandledExceptionEventArgs args)
         {
             Exception e = (Exception)args.ExceptionObject;
@@ -555,20 +585,13 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         private void HandleApplicationExit(object sender, EventArgs e)
         {
+            // already saved by the graceful stop: nothing to report, nothing to redo
+            if (ShutdownSaveDone) return;
 #if SERVER
             DiscordBehavior.NotifyServerStatus("SERVER CRASH DETECTED", DiscordBehavior.ColorRed);
 #endif
             Debug.Print("! SERVER CRASH DETECTED. SAVING PLAYER DATA ONLY !!!");
-            foreach (NetworkCommunicator peer in GameNetwork.NetworkPeers)
-            {
-                var persistentEmpireRepresentative = peer.GetComponent<PersistentEmpireRepresentative>();
-
-                if (peer.ControlledAgent != null && persistentEmpireRepresentative.IsFirstAgentSpawned)
-                {
-                    HandleCreateOrSavePlayer(peer);
-                    HandleCreateOrSavePlayerInventory(peer);
-                }
-            }
+            SaveAllPlayersOnExit();
         }
 
         public override void OnBehaviorInitialize()

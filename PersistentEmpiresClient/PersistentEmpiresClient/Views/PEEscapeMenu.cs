@@ -140,7 +140,7 @@ namespace PersistentEmpires.Views.Views
             }
             if (_persistentEmpireRepresentative != null && (_persistentEmpireRepresentative.CanUseChangeColors || _persistentEmpireRepresentative.IsAdmin) && GameNetwork.MyPeer.GetComponent<MissionPeer>()?.ControlledAgent != null)
             {
-                list.Add(new EscapeMenuItemVM(new TextObject("Change colors", null), delegate (object o)
+                list.Add(new EscapeMenuItemVM(GameTexts.FindText("EscapeMenChangeColors", null), delegate (object o)
                 {
                     this.ExecuteChangeColor();
                     base.OnEscapeMenuToggled(false);
@@ -216,7 +216,7 @@ namespace PersistentEmpires.Views.Views
 
         private void ExecuteChangeColor()
         {
-            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Choose color", "Choose primary color for current character", ColorElements(), true, 1, 1, "Next", "Cancel", this.DoSelectPrimary, this.DoCancelColor));
+            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(GameTexts.FindText("PEColorInqCaption", null).ToString(), GameTexts.FindText("PEColorInqPrimary", null).ToString(), ColorElements(), true, 1, 1, GameTexts.FindText("PEColorNext", null).ToString(), GameTexts.FindText("PE_InquiryData_Cancel", null).ToString(), this.DoSelectPrimary, this.DoCancelColor));
         }
 
         private void DoCancelColor(List<InquiryElement> list)
@@ -228,7 +228,7 @@ namespace PersistentEmpires.Views.Views
         private void DoSelectPrimary(List<InquiryElement> list)
         {
             _primaryColor = (int)list.FirstOrDefault().Identifier;
-            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Choose color", "Choose secondary color for current character", ColorElements(), true, 1, 1, "Next", "Cancel", this.DoSelectSecondary, this.DoCancelColor));
+            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(GameTexts.FindText("PEColorInqCaption", null).ToString(), GameTexts.FindText("PEColorInqSecondary", null).ToString(), ColorElements(), true, 1, 1, GameTexts.FindText("PEColorNext", null).ToString(), GameTexts.FindText("PE_InquiryData_Cancel", null).ToString(), this.DoSelectSecondary, this.DoCancelColor));
         }
 
         private void DoSelectSecondary(List<InquiryElement> list)
