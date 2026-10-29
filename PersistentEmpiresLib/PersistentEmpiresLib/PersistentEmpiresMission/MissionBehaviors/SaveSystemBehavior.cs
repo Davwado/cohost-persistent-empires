@@ -544,23 +544,32 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             {
                 if (ShutdownSaveDone) return;
                 ShutdownSaveDone = true;
-                foreach (NetworkCommunicator peer in GameNetwork.NetworkPeers.ToList())
+                SaveAllPlayersNow();
+            }
+        }
+
+        // Saves every spawned player (also used by the API's "save now"). Call on the game thread.
+        public static int SaveAllPlayersNow()
+        {
+            int saved = 0;
+            foreach (NetworkCommunicator peer in GameNetwork.NetworkPeers.ToList())
+            {
+                try
                 {
-                    try
+                    var persistentEmpireRepresentative = peer.GetComponent<PersistentEmpireRepresentative>();
+                    if (persistentEmpireRepresentative != null && peer.ControlledAgent != null && persistentEmpireRepresentative.IsFirstAgentSpawned)
                     {
-                        var persistentEmpireRepresentative = peer.GetComponent<PersistentEmpireRepresentative>();
-                        if (persistentEmpireRepresentative != null && peer.ControlledAgent != null && persistentEmpireRepresentative.IsFirstAgentSpawned)
-                        {
-                            HandleCreateOrSavePlayer(peer);
-                            HandleCreateOrSavePlayerInventory(peer);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.Print("** PE ERROR ** saving a player on exit: " + ex.Message);
+                        HandleCreateOrSavePlayer(peer);
+                        HandleCreateOrSavePlayerInventory(peer);
+                        saved++;
                     }
                 }
+                catch (Exception ex)
+                {
+                    Debug.Print("** PE ERROR ** saving a player: " + ex.Message);
+                }
             }
+            return saved;
         }
 
         private void HandleExceptionalExit(object sender, UnhandledExceptionEventArgs args)
