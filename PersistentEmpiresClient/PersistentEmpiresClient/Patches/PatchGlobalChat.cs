@@ -51,19 +51,11 @@ namespace PersistentEmpiresHarmony.Patches
 
         public static bool PrefixExecuteSendMessage(MPChatVM __instance)
         {
-            string str = __instance.WrittenText;
-            if (string.IsNullOrEmpty(str))
+            // The message goes out as All or Team chat as usual. The server decides whether an All message is also heard
+            // locally (when global chat is off); sending a Local copy from here made every Team and All message show up twice.
+            if (string.IsNullOrEmpty(__instance.WrittenText))
             {
                 __instance.WrittenText = string.Empty;
-            }
-            else
-            {
-                if (str.Length > __instance.MaxMessageLength)
-                    str = __instance.WrittenText.Substring(0, __instance.MaxMessageLength);
-
-                GameNetwork.BeginModuleEventAsClient();
-                GameNetwork.WriteMessage(new LocalMessage(str));
-                GameNetwork.EndModuleEventAsClient();
             }
 
             return true;

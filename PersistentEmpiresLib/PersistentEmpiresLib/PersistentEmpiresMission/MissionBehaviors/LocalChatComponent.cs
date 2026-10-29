@@ -45,6 +45,14 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             {
                 if (!this.OnPrefixHandleLocalChatFromClient(player, message.Text, false)) return true;
             }
+            BroadcastLocal(player, message.Text);
+            return true;
+        }
+
+        // Sends text as local chat from player to everyone within 30 m (no command handling).
+        public void BroadcastLocal(NetworkCommunicator player, string text)
+        {
+            if (player.ControlledAgent == null) return;
             Vec3 position = player.ControlledAgent.Position;
             List<AffectedPlayer> affectedPlayers = new List<AffectedPlayer>();
             foreach (NetworkCommunicator otherPlayer in GameNetwork.NetworkPeers)
@@ -56,7 +64,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 {
                     // InformationComponent.Instance.SendMessage("(LOCAL)[" + player.UserName + "] " + message.Text, new Color(0.96f, 0.64f, 0.0078f).ToUnsignedInteger(), otherPlayer);
                     GameNetwork.BeginModuleEventAsServer(otherPlayer);
-                    GameNetwork.WriteMessage(new LocalMessageServer(message.Text, player));
+                    GameNetwork.WriteMessage(new LocalMessageServer(text, player));
                     GameNetwork.EndModuleEventAsServer();
                     if (otherPlayer != player)
                     {
@@ -65,9 +73,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 }
             }
             LoggerHelper.LogAnAction(player, LogAction.LocalChat, affectedPlayers.ToArray(), new object[] {
-                message.Text
+                text
             });
-            return true;
         }
 
         private bool HandlePlayerIsTypingMessageFromClient(NetworkCommunicator player, PlayerIsTypingMessage message)

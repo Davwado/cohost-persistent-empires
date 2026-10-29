@@ -16,7 +16,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         public delegate void OpenBankHandler(PE_Bank Bank, int Amount, int BankTaxRate);
         public event OpenBankHandler OnOpenBank;
 
-        public delegate void BankDepositEventHandler(NetworkCommunicator player, int amount);
+        public delegate bool BankDepositEventHandler(NetworkCommunicator player, int amount);
         public static event BankDepositEventHandler OnBankDeposit;
 
         public delegate int BankWithdrawEventHandler(NetworkCommunicator player, int amount);
@@ -73,25 +73,39 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 }
             }
 
-            if (message.Deposit && representative.ReduceIfHaveEnoughGold(message.Amount))
-            {
-                if (BankingComponent.OnBankDeposit != null)
-                {
-                    BankingComponent.OnBankDeposit(player, message.Amount);
-                    LoggerHelper.LogAnAction(player, LogAction.PlayerDepositedToBank, new Database.DBEntities.AffectedPlayer[] { }, new object[] { message.Amount });
-                }
-            }
-            else if (BankingComponent.OnBankQuery(player) >= message.Amount)
-            {
-                if (BankingComponent.OnBankWithdraw != null)
-                {
-                    int amount = BankingComponent.OnBankWithdraw(player, message.Amount);
-                    representative.GoldGain(amount);
-                    LoggerHelper.LogAnAction(player, LogAction.PlayerWithdrawToBank, new Database.DBEntities.AffectedPlayer[] { }, new object[] { amount });
+            if (message.Amount <= 0) return false;
 
+            if (message.Deposit)
+            {
+                if (!representative.ReduceIfHaveEnoughGold(message.Amount)) return false;
+                // Take the gold first, then confirm the bank saved it. If it did not, give the gold back (it used to be lost).
+                bool saved = BankingComponent.OnBankDeposit != null && BankingComponent.OnBankDeposit(player, message.Amount);
+                if (!saved)
+                {
+                    representative.GoldGain(message.Amount);
+                    InformationComponent.Instance.SendMessage("The bank could not record your deposit. Your gold was returned.", Colors.Red.ToUnsignedInteger(), player);
+                    return false;
                 }
+                LoggerHelper.LogAnAction(player, LogAction.PlayerDepositedToBank, new Database.DBEntities.AffectedPlayer[] { }, new object[] { message.Amount });
+            }
+            else
+            {
+                int amount = 0;
+                if (BankingComponent.OnBankQuery(player) >= message.Amount && BankingComponent.OnBankWithdraw != null)
+                {
+                    amount = BankingComponent.OnBankWithdraw(player, message.Amount);
+                }
+                if (amount <= 0)
+                {
+                    InformationComponent.Instance.SendMessage("The bank could not pay out that amount.", Colors.Red.ToUnsignedInteger(), player);
+                    return false;
+                }
+                representative.GoldGain(amount);
+                LoggerHelper.LogAnAction(player, LogAction.PlayerWithdrawToBank, new Database.DBEntities.AffectedPlayer[] { }, new object[] { amount });
             }
 
+            // The bank window shows a balance the client worked out itself; tell the player what the bank really holds.
+            InformationComponent.Instance.SendMessage("Bank balance: " + BankingComponent.OnBankQuery(player), Colors.Green.ToUnsignedInteger(), player);
             return true;
         }
 

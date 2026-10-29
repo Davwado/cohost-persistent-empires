@@ -66,20 +66,24 @@ namespace PersistentEmpires.Views.Views
 
         public void OnPlayerJoined(int factionIndex, Faction faction, int joinedFromIndex, NetworkCommunicator player)
         {
-            if (joinedFromIndex != -1)
+            // Take the player off the scoreboard wherever they are listed. This used to remove at index -1 when the player
+            // was not in the faction they were said to come from; that threw before the player was added to the new faction,
+            // so they vanished from the scoreboard.
+            string playerId = player.VirtualPlayer.ToPlayerId();
+            for (int f = 0; f < this._dataSource.Factions.Count; f++)
             {
-                int indexAt = this._dataSource.Factions[joinedFromIndex].Members
-                     .Select((value, index) => new { value, index })
-                     .Where(pair => pair.value.GetPeer().VirtualPlayer.ToPlayerId() == player.VirtualPlayer.ToPlayerId())
-                     .Select(pair => pair.index + 1)
-                     .FirstOrDefault() - 1;
-                this._dataSource.RemoveMemberAtIndex(joinedFromIndex, indexAt);
-                // this._dataSource.OnPropertyChanged("AllMemberCount");
+                for (int m = this._dataSource.Factions[f].Members.Count - 1; m >= 0; m--)
+                {
+                    TabPlayerVM member = this._dataSource.Factions[f].Members[m];
+                    if (member.GetPeer() == player || member.GetPeer().VirtualPlayer.ToPlayerId() == playerId)
+                    {
+                        this._dataSource.RemoveMemberAtIndex(f, m);
+                    }
+                }
             }
 
-
             // this._dataSource.Factions[factionIndex].Members.Add(new TabPlayerVM(player, faction.lordId == player.VirtualPlayer.Id.ToString()));
-            if (faction != null)
+            if (faction != null && factionIndex >= 0 && factionIndex < this._dataSource.Factions.Count)
             {
                 TabPlayerVM newPlayer = new TabPlayerVM(player, faction.lordId == player.VirtualPlayer.ToPlayerId());
                 this._dataSource.AddMember(factionIndex, newPlayer);
@@ -88,11 +92,11 @@ namespace PersistentEmpires.Views.Views
             // this._dataSource.OnPropertyChanged("AllMemberCount");
             if (player.IsMine)
             {
-                if (joinedFromIndex != -1)
+                if (joinedFromIndex >= 0 && joinedFromIndex < this._dataSource.Factions.Count)
                 {
                     foreach (TabPlayerVM t in this._dataSource.Factions[joinedFromIndex].Members) t.OnPropertyChanged("CanSeeClass");
                 }
-                if (factionIndex != -1)
+                if (factionIndex >= 0 && factionIndex < this._dataSource.Factions.Count)
                 {
                     foreach (TabPlayerVM t in this._dataSource.Factions[factionIndex].Members) t.OnPropertyChanged("CanSeeClass");
                 }

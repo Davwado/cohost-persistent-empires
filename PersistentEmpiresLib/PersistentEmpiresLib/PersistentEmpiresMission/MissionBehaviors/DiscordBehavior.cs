@@ -159,6 +159,8 @@ namespace PersistentEmpiresServer.ServerMissions
 
         public static void NotifyException(Exception ex)
         {
+            // Without a webhook these exceptions used to disappear; keep them in the server log.
+            TaleWorlds.Library.Debug.Print("*PERSISTENT EMPIRES* Exception: " + ex, 0, TaleWorlds.Library.Debug.DebugColor.Red);
             Task.Run(() =>
             {
                 if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl))
