@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Client;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Client;
 using PersistentEmpiresLib.NetworkMessages.Server;
 using PersistentEmpiresLib.SceneScripts;
 using System.Collections.Generic;
@@ -48,11 +49,11 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<WithdrawDepositMoneychest>(this.HandleWithdrawDepositMoneychestFromClient);
+                networkMessageHandlerRegisterer.Register<WithdrawDepositMoneychest>(HandlerGuard.Wrap<WithdrawDepositMoneychest>(this.HandleWithdrawDepositMoneychestFromClient));
             }
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<UpdateMoneychestGold>(this.HandleUpdateMoneychestGoldFromServer);
+                networkMessageHandlerRegisterer.Register<UpdateMoneychestGold>(HandlerGuard.Wrap<UpdateMoneychestGold>(this.HandleUpdateMoneychestGoldFromServer));
             }
         }
         private bool HandleWithdrawDepositMoneychestFromClient(NetworkCommunicator sender, WithdrawDepositMoneychest message)

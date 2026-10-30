@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.Helpers;
+﻿using PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors;
+using PersistentEmpiresLib.Helpers;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
@@ -194,7 +195,10 @@ namespace PersistentEmpiresLib.SceneScripts
                     LoggerHelper.LogAnAction(userAgent.MissionPeer.GetNetworkPeer(), LogAction.PlayerPickedUpGold, null, new object[] { this._amount });
                     // Mission.Current.MakeSound(SoundEvent.GetEventIdFromString("event:/ui/notification/coins_positive"), userAgent.Frame.origin, false, true, -1, -1);
                 }
-                base.GameEntity.Remove(80);
+                // Forget the bag first: MoneyPouchBehavior removes tracked bags after 10 minutes, and removing one that is already gone
+                // is a native call on freed memory.
+                Mission.Current.GetMissionBehavior<MoneyPouchBehavior>()?.MoneyBagCreatedAt.Remove(this);
+                EntityHelper.RemoveOnce(this, base.GameEntity, 80);
             }
         }
     }

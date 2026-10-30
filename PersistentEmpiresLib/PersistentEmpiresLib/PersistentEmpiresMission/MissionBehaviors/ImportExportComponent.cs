@@ -28,12 +28,12 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<OpenImportExport>(this.HandleOpenImportExportFromServer);
+                networkMessageHandlerRegisterer.Register<OpenImportExport>(HandlerGuard.Wrap<OpenImportExport>(this.HandleOpenImportExportFromServer));
             }
             if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<RequestExportItem>(this.HandleRequestExportItem);
-                networkMessageHandlerRegisterer.Register<RequestImportItem>(this.HandleRequestImportItem);
+                networkMessageHandlerRegisterer.Register<RequestExportItem>(HandlerGuard.Wrap<RequestExportItem>(this.HandleRequestExportItem));
+                networkMessageHandlerRegisterer.Register<RequestImportItem>(HandlerGuard.Wrap<RequestImportItem>(this.HandleRequestImportItem));
             }
         }
 

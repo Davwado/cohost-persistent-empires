@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Server;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Server;
 using PersistentEmpiresLib.SceneScripts;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
@@ -44,7 +45,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<SetDayTime>(this.HandleSetDayTimeFromServer);
+                networkMessageHandlerRegisterer.Register<SetDayTime>(HandlerGuard.Wrap<SetDayTime>(this.HandleSetDayTimeFromServer));
             }
             if (GameNetwork.IsServer)
             {

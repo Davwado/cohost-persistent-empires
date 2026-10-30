@@ -877,7 +877,7 @@ namespace PersistentEmpiresLib.SceneScripts
                     Mission.Current.MakeSound(SoundEvent.GetEventIdFromString(this.SoundEffectOnDestroy), globalFrame.origin, false, true, -1, -1);
                 }
 
-                base.GameEntity.Remove(0);
+                EntityHelper.RemoveOnce(this, base.GameEntity, 0);
             }
         }
 

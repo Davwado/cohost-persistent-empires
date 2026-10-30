@@ -760,28 +760,28 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<AddFaction>(this.HandleAddFaction);
-                networkMessageHandlerRegisterer.Register<PlayerJoinedFaction>(this.HandlePlayerJoinedFaction);
-                networkMessageHandlerRegisterer.Register<UpdateFactionFromServer>(this.HandleUpdateFactionFromServer);
-                networkMessageHandlerRegisterer.Register<FactionUpdateLord>(this.HandleFactionUpdateLordFromServer);
-                networkMessageHandlerRegisterer.Register<PeaceDecleration>(this.HandlePeaceDeclerationFromServer);
-                networkMessageHandlerRegisterer.Register<WarDecleration>(this.HandleWarDeclerationFromServer);
-                networkMessageHandlerRegisterer.Register<FactionUpdateMarshall>(this.HandleFactionUpdateMarshallFromServer);
-                networkMessageHandlerRegisterer.Register<SyncFactionKey>(this.HandleSyncFactionKeyFromServer);
+                networkMessageHandlerRegisterer.Register<AddFaction>(HandlerGuard.Wrap<AddFaction>(this.HandleAddFaction));
+                networkMessageHandlerRegisterer.Register<PlayerJoinedFaction>(HandlerGuard.Wrap<PlayerJoinedFaction>(this.HandlePlayerJoinedFaction));
+                networkMessageHandlerRegisterer.Register<UpdateFactionFromServer>(HandlerGuard.Wrap<UpdateFactionFromServer>(this.HandleUpdateFactionFromServer));
+                networkMessageHandlerRegisterer.Register<FactionUpdateLord>(HandlerGuard.Wrap<FactionUpdateLord>(this.HandleFactionUpdateLordFromServer));
+                networkMessageHandlerRegisterer.Register<PeaceDecleration>(HandlerGuard.Wrap<PeaceDecleration>(this.HandlePeaceDeclerationFromServer));
+                networkMessageHandlerRegisterer.Register<WarDecleration>(HandlerGuard.Wrap<WarDecleration>(this.HandleWarDeclerationFromServer));
+                networkMessageHandlerRegisterer.Register<FactionUpdateMarshall>(HandlerGuard.Wrap<FactionUpdateMarshall>(this.HandleFactionUpdateMarshallFromServer));
+                networkMessageHandlerRegisterer.Register<SyncFactionKey>(HandlerGuard.Wrap<SyncFactionKey>(this.HandleSyncFactionKeyFromServer));
 
             }
             if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<UpdateFactionBanner>(this.HandleRequestUpdateFactionBanner);
-                networkMessageHandlerRegisterer.Register<UpdateFactionName>(this.HandleRequestUpdateFactionName);
-                networkMessageHandlerRegisterer.Register<KickFromFaction>(this.HandleRequestKickFromFaction);
-                networkMessageHandlerRegisterer.Register<RequestDoorKey>(this.HandleRequestDoorKey);
-                networkMessageHandlerRegisterer.Register<RequestChestKey>(this.HandleRequestChestKey);
-                networkMessageHandlerRegisterer.Register<MakePeaceRequest>(this.HandleRequestMakePeace);
-                networkMessageHandlerRegisterer.Register<DeclareWarRequest>(this.HandleRequestDeclareWar);
-                networkMessageHandlerRegisterer.Register<FactionAssignMarshall>(this.HandleClientFactionAssignMarshall);
-                networkMessageHandlerRegisterer.Register<RequestLordshipTransfer>(this.HandleClientRequestLordshipTransfer);
-                networkMessageHandlerRegisterer.Register<RequestFactionKeys>(this.HandleRequestFactionKeys);
+                networkMessageHandlerRegisterer.Register<UpdateFactionBanner>(HandlerGuard.Wrap<UpdateFactionBanner>(this.HandleRequestUpdateFactionBanner));
+                networkMessageHandlerRegisterer.Register<UpdateFactionName>(HandlerGuard.Wrap<UpdateFactionName>(this.HandleRequestUpdateFactionName));
+                networkMessageHandlerRegisterer.Register<KickFromFaction>(HandlerGuard.Wrap<KickFromFaction>(this.HandleRequestKickFromFaction));
+                networkMessageHandlerRegisterer.Register<RequestDoorKey>(HandlerGuard.Wrap<RequestDoorKey>(this.HandleRequestDoorKey));
+                networkMessageHandlerRegisterer.Register<RequestChestKey>(HandlerGuard.Wrap<RequestChestKey>(this.HandleRequestChestKey));
+                networkMessageHandlerRegisterer.Register<MakePeaceRequest>(HandlerGuard.Wrap<MakePeaceRequest>(this.HandleRequestMakePeace));
+                networkMessageHandlerRegisterer.Register<DeclareWarRequest>(HandlerGuard.Wrap<DeclareWarRequest>(this.HandleRequestDeclareWar));
+                networkMessageHandlerRegisterer.Register<FactionAssignMarshall>(HandlerGuard.Wrap<FactionAssignMarshall>(this.HandleClientFactionAssignMarshall));
+                networkMessageHandlerRegisterer.Register<RequestLordshipTransfer>(HandlerGuard.Wrap<RequestLordshipTransfer>(this.HandleClientRequestLordshipTransfer));
+                networkMessageHandlerRegisterer.Register<RequestFactionKeys>(HandlerGuard.Wrap<RequestFactionKeys>(this.HandleRequestFactionKeys));
 
             }
         }

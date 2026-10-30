@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Client;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Client;
 using PersistentEmpiresLib.NetworkMessages.Server;
 using System;
 using System.Collections.Generic;
@@ -95,11 +96,11 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<SetAgentAnimation>(this.HandleSetAgentAnimationFromServer);
+                networkMessageHandlerRegisterer.Register<SetAgentAnimation>(HandlerGuard.Wrap<SetAgentAnimation>(this.HandleSetAgentAnimationFromServer));
             }
             if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<RequestAnimation>(this.HandleRequestAnimationFromClient);
+                networkMessageHandlerRegisterer.Register<RequestAnimation>(HandlerGuard.Wrap<RequestAnimation>(this.HandleRequestAnimationFromClient));
             }
         }
 

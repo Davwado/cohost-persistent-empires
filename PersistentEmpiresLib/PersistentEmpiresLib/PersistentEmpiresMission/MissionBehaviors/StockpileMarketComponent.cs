@@ -45,16 +45,16 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<OpenStockpileMarket>(this.HandleOpenStockpileMarketFromServer);
-                networkMessageHandlerRegisterer.Register<UpdateStockpileStock>(this.HandleUpdateStockpileStockFromServer);
-                networkMessageHandlerRegisterer.Register<UpdateStockpileMultiStock>(this.HandleUpdateStockpileMultiStock);
+                networkMessageHandlerRegisterer.Register<OpenStockpileMarket>(HandlerGuard.Wrap<OpenStockpileMarket>(this.HandleOpenStockpileMarketFromServer));
+                networkMessageHandlerRegisterer.Register<UpdateStockpileStock>(HandlerGuard.Wrap<UpdateStockpileStock>(this.HandleUpdateStockpileStockFromServer));
+                networkMessageHandlerRegisterer.Register<UpdateStockpileMultiStock>(HandlerGuard.Wrap<UpdateStockpileMultiStock>(this.HandleUpdateStockpileMultiStock));
             }
             else
             {
-                networkMessageHandlerRegisterer.Register<RequestBuyItem>(this.HandleRequestBuyItemFromClient);
-                networkMessageHandlerRegisterer.Register<RequestSellItem>(this.HandleRequestSellItemFromClient);
-                networkMessageHandlerRegisterer.Register<RequestCloseStockpileMarket>(this.HandleRequestCloseStockpileMarketFromClient);
-                networkMessageHandlerRegisterer.Register<StockpileUnpackBox>(this.HandleStockpileUnpackBoxFromClient);
+                networkMessageHandlerRegisterer.Register<RequestBuyItem>(HandlerGuard.Wrap<RequestBuyItem>(this.HandleRequestBuyItemFromClient));
+                networkMessageHandlerRegisterer.Register<RequestSellItem>(HandlerGuard.Wrap<RequestSellItem>(this.HandleRequestSellItemFromClient));
+                networkMessageHandlerRegisterer.Register<RequestCloseStockpileMarket>(HandlerGuard.Wrap<RequestCloseStockpileMarket>(this.HandleRequestCloseStockpileMarketFromClient));
+                networkMessageHandlerRegisterer.Register<StockpileUnpackBox>(HandlerGuard.Wrap<StockpileUnpackBox>(this.HandleStockpileUnpackBoxFromClient));
             }
         }
 
@@ -124,31 +124,63 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             }*/
         }
 
+        private float _nextOpenListSweep = 0f;
         private static bool _running = false;
         public override void OnMissionTick(float dt)
         {
             base.OnMissionTick(dt);
 
+            if (GameNetwork.IsServer && base.Mission.CurrentTime >= _nextOpenListSweep)
+            {
+                _nextOpenListSweep = base.Mission.CurrentTime + 5f;
+                OpenListSweep.Sweep(this.openedInventories, 10f);
+            }
+
             if (!_running && DateTimeOffset.Now.ToUnixTimeSeconds() > this.LastSaveAt + this.SaveDuration)
             {
                 _running = true;
-                Task.Run(() =>
+                Action job = null;
+                List<PE_StockpileMarket> changed;
+                try
+                {
+                    // Game thread: find the changed markets and build their SQL (reads the scene and the stock). Only the write goes to the background.
+                    changed = Mission.GetActiveEntitiesWithScriptComponentOfType<PE_StockpileMarket>().Select(g => g.GetFirstScriptOfType<PE_StockpileMarket>()).Where(x => x.MarketItems.Any(i => i.Dirty)).ToList();
+                    if (changed.Count > 0)
                     {
-                        try
-                        {
-                            AutoSaveAllMarkets();
-                            LastSaveAt = DateTimeOffset.Now.ToUnixTimeSeconds();
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.Print($"* Exception in Autosave stockpiles! {ex.Message}", color: Debug.DebugColor.Red);
-                            throw ex;
-                        }
-                        finally
-                        {
-                            _running = false;
-                        }
-                    });
+                        job = SaveSystemBehavior.PrepareStockpileMarketsJob(changed);
+                        foreach (var market in changed) market.MarketItems.ForEach(x => x.Dirty = false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ErrorGuard.Report("preparing the market autosave", ex);
+                    LastSaveAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+                    _running = false;
+                    return;
+                }
+                if (job == null)
+                {
+                    LastSaveAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+                    _running = false;
+                    return;
+                }
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        job();
+                    }
+                    catch (Exception ex)
+                    {
+                        ErrorGuard.Report("autosaving the markets", ex);
+                        foreach (var market in changed) market.MarketItems.ForEach(x => x.Dirty = true);   // try again next time
+                    }
+                    finally
+                    {
+                        LastSaveAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+                        _running = false;
+                    }
+                });
             }
         }
 
@@ -212,6 +244,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (peer.ControlledAgent == null || peer.ControlledAgent.IsActive() == false) return false;
             if (peer.ControlledAgent.Position.Distance(stockpileMarket.GameEntity.GlobalPosition) > stockpileMarket.Distance) return false;
 
+            if (message.ItemIndex < 0 || message.ItemIndex >= stockpileMarket.MarketItems.Count) return false;   // the index comes from the client
             MarketItem marketItem = stockpileMarket.MarketItems[message.ItemIndex];
             if (marketItem.Stock == 0)
             {
@@ -283,6 +316,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             PE_StockpileMarket stockpileMarket = (PE_StockpileMarket)message.StockpileMarket;
             if (peer.ControlledAgent == null || peer.ControlledAgent.IsActive() == false) return false;
             if (peer.ControlledAgent.Position.Distance(stockpileMarket.GameEntity.GlobalPosition) > stockpileMarket.Distance) return false;
+            if (message.ItemIndex < 0 || message.ItemIndex >= stockpileMarket.MarketItems.Count) return false;   // the index comes from the client
             MarketItem marketItem = stockpileMarket.MarketItems[message.ItemIndex];
 
             if (!persistentEmpireRepresentative.GetInventory().IsInventoryIncludes(marketItem.Item, 1))
@@ -367,7 +401,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             {
                 this.openedInventories[entity] = new List<NetworkCommunicator>();
             }
-            this.openedInventories[entity].Add(networkCommunicator);
+            if (!this.openedInventories[entity].Contains(networkCommunicator)) this.openedInventories[entity].Add(networkCommunicator);
 
             List<int> indexes = new List<int>();
             for (int i = 0; i < entity.MarketItems.Count; i++)

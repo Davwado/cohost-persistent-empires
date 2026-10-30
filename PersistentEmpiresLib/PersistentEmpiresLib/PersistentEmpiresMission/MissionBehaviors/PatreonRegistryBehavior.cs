@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Server;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Server;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Library;
@@ -62,7 +63,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<PatreonRegister>(this.HandlePatreonRegisterFromServer);
+                networkMessageHandlerRegisterer.Register<PatreonRegister>(HandlerGuard.Wrap<PatreonRegister>(this.HandlePatreonRegisterFromServer));
             }
         }
         public bool IsPlayerPatreon(NetworkCommunicator player)

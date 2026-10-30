@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.Database.DBEntities;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.Database.DBEntities;
 using PersistentEmpiresLib.Factions;
 using PersistentEmpiresLib.NetworkMessages.Server;
 using PersistentEmpiresLib.SceneScripts;
@@ -64,7 +65,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<UpdateCastle>(this.HandleUpdateCastle);
+                networkMessageHandlerRegisterer.Register<UpdateCastle>(HandlerGuard.Wrap<UpdateCastle>(this.HandleUpdateCastle));
             }
         }
         public void AddCastle(PE_CastleBanner castleBanner)

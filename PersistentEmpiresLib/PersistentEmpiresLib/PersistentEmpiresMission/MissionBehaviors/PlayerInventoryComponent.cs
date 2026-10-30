@@ -120,18 +120,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 }
             }
 
-            foreach (var x in OpenedByPeerInventory)
-            {
-                if (x.Value != null && x.Value.TiedEntity?.GameEntity.GetGlobalFrame().origin.Distance(x.Key.ControlledAgent.Position) > _distanceForAutoCloseInventory)
-                {
-                    ClosedInventoryOnServer(x.Key, x.Value.InventoryId);
-
-                    // Send signal to client to close inventory
-                    GameNetwork.BeginModuleEventAsServer(x.Key);
-                    GameNetwork.WriteMessage(new ForceCloseInventory());
-                    GameNetwork.EndModuleEventAsServer();
-                }
-            }
+            CloseStaleInventories(_distanceForAutoCloseInventory, true);
         }
 
         public override void OnPlayerDisconnectedFromServer(NetworkCommunicator player)
@@ -152,13 +141,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 this.OpenedByPeerInventory.Remove(player);
             }
 
-            foreach (var x in OpenedByPeerInventory)
-            {
-                if (x.Value != null && x.Value.TiedEntity?.GameEntity.GetGlobalFrame().origin.Distance(x.Key.ControlledAgent.Position) > 2f)
-                {
-                    ClosedInventoryOnServer(x.Key, x.Value.InventoryId);
-                }
-            }
+            this.LastRevealed.Remove(player);
+            CloseStaleInventories(_distanceForAutoCloseInventory, false);
         }
 
         public override void OnRemoveBehavior()
@@ -389,6 +373,31 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             return ClosedInventoryOnServer(player, message.InventoryId);
         }
 
+        // Closes the inventories whose player walked away, died or left. It works on a copy: closing one edits OpenedByPeerInventory,
+        // which used to throw "collection was modified" mid-loop, and a player without an agent made the distance check throw.
+        private void CloseStaleInventories(float maxDistance, bool tellClient)
+        {
+            foreach (KeyValuePair<NetworkCommunicator, Inventory> open in this.OpenedByPeerInventory.ToList())
+            {
+                NetworkCommunicator peer = open.Key;
+                Inventory inventory = open.Value;
+                if (peer == null || inventory == null) continue;
+                bool stale = !peer.IsConnectionActive || peer.ControlledAgent == null || !peer.ControlledAgent.IsActive();
+                if (!stale && inventory.TiedEntity != null && inventory.TiedEntity.GameEntity != null)
+                {
+                    stale = inventory.TiedEntity.GameEntity.GetGlobalFrame().origin.Distance(peer.ControlledAgent.Position) > maxDistance;
+                }
+                if (!stale) continue;
+                ClosedInventoryOnServer(peer, inventory.InventoryId);
+                if (tellClient && peer.IsConnectionActive)
+                {
+                    GameNetwork.BeginModuleEventAsServer(peer);
+                    GameNetwork.WriteMessage(new ForceCloseInventory());
+                    GameNetwork.EndModuleEventAsServer();
+                }
+            }
+        }
+
         // Takes a loot bag out of the scene and stops tracking it, so nothing reads the removed entity afterwards.
         private void RemoveLootEntity(string inventoryId)
         {
@@ -396,7 +405,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (!this.LootableObjects.TryGetValue(inventoryId, out entity)) return;
             this.LootableObjects.Remove(inventoryId);
             this.LootableCreatedAt.Remove(inventoryId);
-            if (entity != null && entity.GameEntity != null) entity.GameEntity.Remove(0);
+            if (entity != null) EntityHelper.RemoveOnce(entity, entity.GameEntity, 0);
         }
 
         private bool HandleRequestDropItemFromInventory(NetworkCommunicator player, RequestDropItemFromInventory message)
@@ -598,24 +607,24 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         public void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode mode)
         {
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
-            networkMessageHandlerRegisterer.Register<OpenInventory>(this.HandleOpenInventoryFromServer);
-            networkMessageHandlerRegisterer.Register<ExecuteInventoryTransfer>(this.HandleExecuteInventoryTransferFromServer);
-            networkMessageHandlerRegisterer.Register<ResetAgentArmor>(this.HandleResetAgentArmorFromServer);
-            networkMessageHandlerRegisterer.Register<UpdateInventorySlot>(this.HandleUpdateInventorySlotFromServer);
-            networkMessageHandlerRegisterer.Register<ForceCloseInventory>(this.HandleForceCloseInventoryFromServer);
+            networkMessageHandlerRegisterer.Register<OpenInventory>(HandlerGuard.Wrap<OpenInventory>(this.HandleOpenInventoryFromServer));
+            networkMessageHandlerRegisterer.Register<ExecuteInventoryTransfer>(HandlerGuard.Wrap<ExecuteInventoryTransfer>(this.HandleExecuteInventoryTransferFromServer));
+            networkMessageHandlerRegisterer.Register<ResetAgentArmor>(HandlerGuard.Wrap<ResetAgentArmor>(this.HandleResetAgentArmorFromServer));
+            networkMessageHandlerRegisterer.Register<UpdateInventorySlot>(HandlerGuard.Wrap<UpdateInventorySlot>(this.HandleUpdateInventorySlotFromServer));
+            networkMessageHandlerRegisterer.Register<ForceCloseInventory>(HandlerGuard.Wrap<ForceCloseInventory>(this.HandleForceCloseInventoryFromServer));
         }
 #endif
 #if SERVER
         public void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode mode)
         {
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
-            networkMessageHandlerRegisterer.Register<RequestOpenInventory>(this.HandleRequestOpenInventoryFromClient);
-            networkMessageHandlerRegisterer.Register<RequestInventoryTransfer>(this.HandleRequestInventoryTransferFromClient);
-            networkMessageHandlerRegisterer.Register<ClosedInventory>(this.HandleClosedInventoryFromClient);
-            networkMessageHandlerRegisterer.Register<InventoryHotkey>(this.HandleRequestInventoryHotkey);
-            networkMessageHandlerRegisterer.Register<InventorySplitItem>(this.HandleRequestSplit);
-            networkMessageHandlerRegisterer.Register<RequestDropItemFromInventory>(this.HandleRequestDropItemFromInventory);
-            networkMessageHandlerRegisterer.Register<RequestRevealItemBag>(this.HandleRequestRevealItemBag);
+            networkMessageHandlerRegisterer.Register<RequestOpenInventory>(HandlerGuard.Wrap<RequestOpenInventory>(this.HandleRequestOpenInventoryFromClient));
+            networkMessageHandlerRegisterer.Register<RequestInventoryTransfer>(HandlerGuard.Wrap<RequestInventoryTransfer>(this.HandleRequestInventoryTransferFromClient));
+            networkMessageHandlerRegisterer.Register<ClosedInventory>(HandlerGuard.Wrap<ClosedInventory>(this.HandleClosedInventoryFromClient));
+            networkMessageHandlerRegisterer.Register<InventoryHotkey>(HandlerGuard.Wrap<InventoryHotkey>(this.HandleRequestInventoryHotkey));
+            networkMessageHandlerRegisterer.Register<InventorySplitItem>(HandlerGuard.Wrap<InventorySplitItem>(this.HandleRequestSplit));
+            networkMessageHandlerRegisterer.Register<RequestDropItemFromInventory>(HandlerGuard.Wrap<RequestDropItemFromInventory>(this.HandleRequestDropItemFromInventory));
+            networkMessageHandlerRegisterer.Register<RequestRevealItemBag>(HandlerGuard.Wrap<RequestRevealItemBag>(this.HandleRequestRevealItemBag));
         }
 
         private bool ClosedInventoryOnServer(NetworkCommunicator player, string inventoryId)

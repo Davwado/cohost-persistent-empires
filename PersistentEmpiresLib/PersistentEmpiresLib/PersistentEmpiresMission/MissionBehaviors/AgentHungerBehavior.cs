@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Client;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Client;
 using PersistentEmpiresLib.NetworkMessages.Server;
 using System;
 using System.Collections.Generic;
@@ -238,12 +239,12 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<SetHunger>(this.HandleSetHungerFromServer);
+                networkMessageHandlerRegisterer.Register<SetHunger>(HandlerGuard.Wrap<SetHunger>(this.HandleSetHungerFromServer));
             }
             else if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<RequestStartEat>(this.HandleRequestStartEatFromClient);
-                networkMessageHandlerRegisterer.Register<RequestStopEat>(this.HandleRequestStopEatFromClient);
+                networkMessageHandlerRegisterer.Register<RequestStartEat>(HandlerGuard.Wrap<RequestStartEat>(this.HandleRequestStartEatFromClient));
+                networkMessageHandlerRegisterer.Register<RequestStopEat>(HandlerGuard.Wrap<RequestStopEat>(this.HandleRequestStopEatFromClient));
             }
 
         }

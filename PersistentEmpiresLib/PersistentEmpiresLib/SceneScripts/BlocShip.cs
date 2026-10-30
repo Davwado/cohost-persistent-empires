@@ -174,7 +174,7 @@ namespace PersistentEmpiresLib.SceneScripts
 
             if (destroyed)
             {
-                base.GameEntity.Remove(0);
+                EntityHelper.RemoveOnce(this, base.GameEntity, 0);
             }
         }
 

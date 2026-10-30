@@ -3,6 +3,7 @@ using PersistentEmpiresServer.ServerMissions;
 #endif
 using PersistentEmpiresLib.Database.DBEntities;
 using PersistentEmpiresLib.Factions;
+using PersistentEmpiresLib.Helpers;
 using PersistentEmpiresLib.SceneScripts;
 using System;
 using System.Collections.Generic;
@@ -116,6 +117,51 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         public static event GetAllHorseMarkets OnGetAllHorseMarkets;
         public static event GetHorseMarket OnGetHorseMarket;
         public static event CreateOrSaveHorseMarket OnCreateOrSaveHorseMarket;
+
+        /* Autosave is built on the game thread and only written in the background: the repositories read players, agents and inventories
+           to build their SQL, and the engine's objects must not be read from another thread. A handler returns the database work to run later. */
+        public delegate Action PrepareAutosave(List<NetworkCommunicator> peers);
+        public static event PrepareAutosave OnPrepareAutosave;
+        public delegate Action PrepareStockpileMarkets(List<PE_StockpileMarket> markets);
+        public static event PrepareStockpileMarkets OnPrepareStockpileMarkets;
+
+        // Game thread. Returns the database writes for an autosave of these players.
+        public static List<Action> PrepareAutosaveJobs(List<NetworkCommunicator> peers)
+        {
+            var jobs = new List<Action>();
+            if (OnPrepareAutosave == null)
+            {
+                // No repository prepared its own writes (an older save module): keep the old behaviour.
+                jobs.Add(() => AutoSaveJob(peers));
+                return jobs;
+            }
+            foreach (Delegate handler in OnPrepareAutosave.GetInvocationList())
+            {
+                try
+                {
+                    Action job = ((PrepareAutosave)handler)(peers);
+                    if (job != null) jobs.Add(job);
+                }
+                catch (Exception ex)
+                {
+                    ErrorGuard.Report("preparing the autosave", ex);
+                }
+            }
+            return jobs;
+        }
+
+        // Game thread. Returns the database write for these markets.
+        public static Action PrepareStockpileMarketsJob(List<PE_StockpileMarket> markets)
+        {
+            if (OnPrepareStockpileMarkets == null) return () => HandleCreateOrSaveStockpileMarkets(markets);
+            Action job = null;
+            foreach (Delegate handler in OnPrepareStockpileMarkets.GetInvocationList())
+            {
+                Action one = ((PrepareStockpileMarkets)handler)(markets);
+                if (one != null) job = one;
+            }
+            return job;
+        }
 
         public static void AutoSaveJob(List<NetworkCommunicator> peers)
         {
@@ -665,22 +711,36 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (!_running && DateTimeOffset.Now.ToUnixTimeSeconds() > LastSaveAt + SaveDuration)
             {
                 _running = true;
+                List<Action> jobs;
+                try
+                {
+                    // Game thread: announce, pick the players and build the SQL.
+                    InformationComponent.Instance.BroadcastMessage("* Autosave player inventories triggered. It might lag a bit", Colors.Blue.ToUnsignedInteger());
+                    List<NetworkCommunicator> peers = GameNetwork.NetworkPeers.Where(x => x.ControlledAgent != null && x.ControlledAgent.IsActive()).ToList();
+                    Debug.Print($"** Persistent Empires Auto Save ** Saving {peers.Count} players", 0, Debug.DebugColor.Blue);
+                    jobs = PrepareAutosaveJobs(peers);
+                }
+                catch (Exception ex)
+                {
+                    ErrorGuard.Report("preparing the autosave", ex);
+                    LastSaveAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+                    _running = false;
+                    return;
+                }
+                // Background: only the database writes.
                 Task.Run(() =>
                 {
-                    // Create a Job
                     try
                     {
-                        InformationComponent.Instance.BroadcastMessage("* Autosave player inventories triggered. It might lag a bit", Colors.Blue.ToUnsignedInteger());
-                        AutoSaveJob(GameNetwork.NetworkPeers.Where(x=> x.ControlledAgent != null && x.ControlledAgent.IsActive()).ToList());
-                        LastSaveAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+                        foreach (Action job in jobs) job();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
-                        Debug.Print($"* Exception in Autosave player inventories! {ex.Message}", color: Debug.DebugColor.Red);
-                        throw ex;
+                        ErrorGuard.Report("autosaving players", ex);
                     }
                     finally
                     {
+                        LastSaveAt = DateTimeOffset.Now.ToUnixTimeSeconds();
                         _running = false;
                     }
                 });

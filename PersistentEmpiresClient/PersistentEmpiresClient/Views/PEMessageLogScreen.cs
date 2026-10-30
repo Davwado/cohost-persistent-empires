@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresClient.ViewsVM.MessageLogPanel;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresClient.ViewsVM.MessageLogPanel;
 using PersistentEmpiresLib.NetworkMessages.Server;
 using System;
 using System.Collections.Generic;
@@ -45,8 +46,8 @@ namespace PersistentEmpires.Views.Views
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<LocalMessageServer>(this.HandleLocalMessageFromServerForLog);
-                networkMessageHandlerRegisterer.Register<ShoutMessageServer>(this.HandleShoutMessageFromServerForLog);                
+                networkMessageHandlerRegisterer.Register<LocalMessageServer>(HandlerGuard.Wrap<LocalMessageServer>(this.HandleLocalMessageFromServerForLog));
+                networkMessageHandlerRegisterer.Register<ShoutMessageServer>(HandlerGuard.Wrap<ShoutMessageServer>(this.HandleShoutMessageFromServerForLog));                
             }
         }
 

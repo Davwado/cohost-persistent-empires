@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors;
 using PersistentEmpiresLib.SceneScripts.Extensions;
 using System;
 using System.Collections.Generic;
@@ -125,7 +126,7 @@ namespace PersistentEmpiresLib.SceneScripts
                 {
                     Mission.Current.MakeSound(SoundEvent.GetEventIdFromString(this.SoundEffectOnDestroy), globalFrame.origin, false, true, -1, -1);
                 }
-                base.GameEntity.Remove(0);
+                EntityHelper.RemoveOnce(this, base.GameEntity, 0);
             }
             if (this.HitPoint == this.MaxHitPoint)
             {

@@ -41,7 +41,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             base.OnRemoveBehavior();
 
             var networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode.Add);
-            networkMessageHandlerRegisterer.Register<SendRulesToNewClientMessage>(this.HandleFromServerSendRulesToNewClientMessage);
+            networkMessageHandlerRegisterer.Register<SendRulesToNewClientMessage>(HandlerGuard.Wrap<SendRulesToNewClientMessage>(this.HandleFromServerSendRulesToNewClientMessage));
         }
 #endif
 
@@ -79,24 +79,24 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         {
             if (GameNetwork.IsClient)
             {
-                registerer.Register<SyncGold>(this.HandleServerEventUpdateGold);
+                registerer.Register<SyncGold>(HandlerGuard.Wrap<SyncGold>(this.HandleServerEventUpdateGold));
                 // registerer.Register<GoldGain>((this.HandleServerEventTDMGoldGain));
-                registerer.Register<PEGoldGain>(this.HandlServerEventGoldGain);
-                registerer.Register<PEGoldLost>(this.HandlServerEventGoldLost);
-                registerer.Register<SyncFaction>(this.HandleSyncFaction);
-                registerer.Register<SyncCastleBanner>(this.HandleSyncCastleBanner);
-                registerer.Register<AdminOrErrorMessage>(this.HandleAdminOrErrorMessage);
-                registerer.Register<SyncMember>(this.HandleSyncMember);
-                registerer.Register<AddMarshallIdToFaction>(this.HandleAddMarshallIdToFactionServer);
-                registerer.Register<ServerHandshake>(this.HandleServerHandshakeFromServer);
-                registerer.Register<AgentLabelConfig>(this.HandleServerAgentLabelConfig);
-                registerer.Register<ExistingObjectsEnd>(this.HandleFromServerExistingObjectsEnd);
-                registerer.Register<SendRulesToNewClientMessage>(this.HandleFromServerSendRulesToNewClientMessage);
+                registerer.Register<PEGoldGain>(HandlerGuard.Wrap<PEGoldGain>(this.HandlServerEventGoldGain));
+                registerer.Register<PEGoldLost>(HandlerGuard.Wrap<PEGoldLost>(this.HandlServerEventGoldLost));
+                registerer.Register<SyncFaction>(HandlerGuard.Wrap<SyncFaction>(this.HandleSyncFaction));
+                registerer.Register<SyncCastleBanner>(HandlerGuard.Wrap<SyncCastleBanner>(this.HandleSyncCastleBanner));
+                registerer.Register<AdminOrErrorMessage>(HandlerGuard.Wrap<AdminOrErrorMessage>(this.HandleAdminOrErrorMessage));
+                registerer.Register<SyncMember>(HandlerGuard.Wrap<SyncMember>(this.HandleSyncMember));
+                registerer.Register<AddMarshallIdToFaction>(HandlerGuard.Wrap<AddMarshallIdToFaction>(this.HandleAddMarshallIdToFactionServer));
+                registerer.Register<ServerHandshake>(HandlerGuard.Wrap<ServerHandshake>(this.HandleServerHandshakeFromServer));
+                registerer.Register<AgentLabelConfig>(HandlerGuard.Wrap<AgentLabelConfig>(this.HandleServerAgentLabelConfig));
+                registerer.Register<ExistingObjectsEnd>(HandlerGuard.Wrap<ExistingObjectsEnd>(this.HandleFromServerExistingObjectsEnd));
+                registerer.Register<SendRulesToNewClientMessage>(HandlerGuard.Wrap<SendRulesToNewClientMessage>(this.HandleFromServerSendRulesToNewClientMessage));
             }
             else
             {
-                registerer.Register<MyDiscordId>(this.HandleClientMyDiscordId);
-                registerer.Register<RequestSuicide>(this.HandleClientRequestSuicide);
+                registerer.Register<MyDiscordId>(HandlerGuard.Wrap<MyDiscordId>(this.HandleClientMyDiscordId));
+                registerer.Register<RequestSuicide>(HandlerGuard.Wrap<RequestSuicide>(this.HandleClientRequestSuicide));
             }
         }
 

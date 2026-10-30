@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Client;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Client;
 using PersistentEmpiresLib.NetworkMessages.Server;
 using System.Collections.Generic;
 using TaleWorlds.MountAndBlade;
@@ -26,12 +27,12 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         {
             if (GameNetwork.IsClient)
             {
-                registerer.Register<SendBatchVoiceToPlay>(this.HandleServerEventSendVoiceToPlay);
+                registerer.Register<SendBatchVoiceToPlay>(HandlerGuard.Wrap<SendBatchVoiceToPlay>(this.HandleServerEventSendVoiceToPlay));
                 return;
             }
             if (GameNetwork.IsServer)
             {
-                registerer.Register<SendBatchVoice>(this.HandleClientEventSendVoiceRecord);
+                registerer.Register<SendBatchVoice>(HandlerGuard.Wrap<SendBatchVoice>(this.HandleClientEventSendVoiceRecord));
             }
         }
 

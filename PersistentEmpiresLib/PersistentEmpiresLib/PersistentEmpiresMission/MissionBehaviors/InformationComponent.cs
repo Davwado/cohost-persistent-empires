@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Server;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Server;
 using System;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -69,9 +70,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<QuickInformation>(this.HandleOnQuickInformationFromServer);
-                networkMessageHandlerRegisterer.Register<Announcement>(this.HandleOnAnnouncementFromServer);
-                networkMessageHandlerRegisterer.Register<PEInformationMessage>(this.HandleInformationMessageFromServer);
+                networkMessageHandlerRegisterer.Register<QuickInformation>(HandlerGuard.Wrap<QuickInformation>(this.HandleOnQuickInformationFromServer));
+                networkMessageHandlerRegisterer.Register<Announcement>(HandlerGuard.Wrap<Announcement>(this.HandleOnAnnouncementFromServer));
+                networkMessageHandlerRegisterer.Register<PEInformationMessage>(HandlerGuard.Wrap<PEInformationMessage>(this.HandleInformationMessageFromServer));
             }
         }
 

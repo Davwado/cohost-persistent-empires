@@ -154,14 +154,14 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<OpenCraftingStation>(this.HandleOpenCraftingStationFromServer);
-                networkMessageHandlerRegisterer.Register<CraftingStarted>(this.HandleCraftingStartedFromServer);
-                networkMessageHandlerRegisterer.Register<CraftingCompleted>(this.HandleCraftingCompletedFromServer);
+                networkMessageHandlerRegisterer.Register<OpenCraftingStation>(HandlerGuard.Wrap<OpenCraftingStation>(this.HandleOpenCraftingStationFromServer));
+                networkMessageHandlerRegisterer.Register<CraftingStarted>(HandlerGuard.Wrap<CraftingStarted>(this.HandleCraftingStartedFromServer));
+                networkMessageHandlerRegisterer.Register<CraftingCompleted>(HandlerGuard.Wrap<CraftingCompleted>(this.HandleCraftingCompletedFromServer));
                 // networkMessageHandlerRegisterer.Register<UpdateCastle>(this.HandleUpdateCastle);
             }
             else
             {
-                networkMessageHandlerRegisterer.Register<RequestExecuteCraft>(this.HandleRequestExecuteCraftFromClient);
+                networkMessageHandlerRegisterer.Register<RequestExecuteCraft>(HandlerGuard.Wrap<RequestExecuteCraft>(this.HandleRequestExecuteCraftFromClient));
 
             }
         }

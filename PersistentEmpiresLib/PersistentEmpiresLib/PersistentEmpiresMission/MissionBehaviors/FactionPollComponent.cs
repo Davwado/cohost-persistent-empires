@@ -341,16 +341,16 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer registerer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                registerer.Register<FactionPollProgress>(this.HandleServerEventUpdatePollProgress);
-                registerer.Register<FactionLordPollOpened>(this.HandleServerFactionLordPollOpened);
-                registerer.Register<FactionPollCancelled>(this.HandleServerEventPollCancelled);
-                registerer.Register<FactionLordPollClosed>(this.HandleServerEventLordPollClosed);
+                registerer.Register<FactionPollProgress>(HandlerGuard.Wrap<FactionPollProgress>(this.HandleServerEventUpdatePollProgress));
+                registerer.Register<FactionLordPollOpened>(HandlerGuard.Wrap<FactionLordPollOpened>(this.HandleServerFactionLordPollOpened));
+                registerer.Register<FactionPollCancelled>(HandlerGuard.Wrap<FactionPollCancelled>(this.HandleServerEventPollCancelled));
+                registerer.Register<FactionLordPollClosed>(HandlerGuard.Wrap<FactionLordPollClosed>(this.HandleServerEventLordPollClosed));
                 return;
             }
             if (GameNetwork.IsServer)
             {
-                registerer.Register<FactionPollResponse>(this.HandleClientFactionPollResponse);
-                registerer.Register<FactionLordPollRequest>(this.HandleClientFactionLordPollRequested);
+                registerer.Register<FactionPollResponse>(HandlerGuard.Wrap<FactionPollResponse>(this.HandleClientFactionPollResponse));
+                registerer.Register<FactionLordPollRequest>(HandlerGuard.Wrap<FactionLordPollRequest>(this.HandleClientFactionLordPollRequested));
             }
         }
 

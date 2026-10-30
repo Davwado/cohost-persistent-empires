@@ -60,24 +60,32 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<OpenTradingCenter>(this.HandleOpenTradingCenterFromServer);
-                networkMessageHandlerRegisterer.Register<UpdateTradingCenterStock>(this.HandleUpdateTradingCenterStockFromServer);
-                networkMessageHandlerRegisterer.Register<UpdateTradingCenterMultiStock>(this.HandleUpdateTradingCenterMultiStock);
+                networkMessageHandlerRegisterer.Register<OpenTradingCenter>(HandlerGuard.Wrap<OpenTradingCenter>(this.HandleOpenTradingCenterFromServer));
+                networkMessageHandlerRegisterer.Register<UpdateTradingCenterStock>(HandlerGuard.Wrap<UpdateTradingCenterStock>(this.HandleUpdateTradingCenterStockFromServer));
+                networkMessageHandlerRegisterer.Register<UpdateTradingCenterMultiStock>(HandlerGuard.Wrap<UpdateTradingCenterMultiStock>(this.HandleUpdateTradingCenterMultiStock));
             }
             else
             {
-                networkMessageHandlerRegisterer.Register<RequestTradingBuyItem>(this.HandleRequestTradingBuyItemFromClient);
-                networkMessageHandlerRegisterer.Register<RequestTradingSellItem>(this.HandleRequestTradingSellItemFromClient);
-                networkMessageHandlerRegisterer.Register<RequestCloseTradingCenter>(this.HandleRequestCloseTradingCenterFromClient);
-                networkMessageHandlerRegisterer.Register<RequestTradingPrices>(this.HandleRequestTradingPricesFromClient);
+                networkMessageHandlerRegisterer.Register<RequestTradingBuyItem>(HandlerGuard.Wrap<RequestTradingBuyItem>(this.HandleRequestTradingBuyItemFromClient));
+                networkMessageHandlerRegisterer.Register<RequestTradingSellItem>(HandlerGuard.Wrap<RequestTradingSellItem>(this.HandleRequestTradingSellItemFromClient));
+                networkMessageHandlerRegisterer.Register<RequestCloseTradingCenter>(HandlerGuard.Wrap<RequestCloseTradingCenter>(this.HandleRequestCloseTradingCenterFromClient));
+                networkMessageHandlerRegisterer.Register<RequestTradingPrices>(HandlerGuard.Wrap<RequestTradingPrices>(this.HandleRequestTradingPricesFromClient));
             }
         }
+
+        private float _nextOpenListSweep = 0f;
 
         public override void OnMissionTick(float dt)
         {
             base.OnMissionTick(dt);
 
             if (GameNetwork.IsClient) return;
+
+            if (base.Mission.CurrentTime >= _nextOpenListSweep)
+            {
+                _nextOpenListSweep = base.Mission.CurrentTime + 5f;
+                OpenListSweep.Sweep(this.openedInventories, 10f);
+            }
 
             foreach (PE_TradeCenter tradeCenter in this.RandomizeTimer.Keys.ToList())
             {
@@ -319,7 +327,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             {
                 this.openedInventories[entity] = new List<NetworkCommunicator>();
             }
-            this.openedInventories[entity].Add(networkCommunicator);
+            if (!this.openedInventories[entity].Contains(networkCommunicator)) this.openedInventories[entity].Add(networkCommunicator);
 
             List<int> indexes = new List<int>();
             for (int i = 0; i < entity.MarketItems.Count; i++)

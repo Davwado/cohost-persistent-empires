@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Server;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +45,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             }
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<BehadeAgentPacket>(this.HandleBehadeAgentPacketFromServer);
+                networkMessageHandlerRegisterer.Register<BehadeAgentPacket>(HandlerGuard.Wrap<BehadeAgentPacket>(this.HandleBehadeAgentPacketFromServer));
             }
         }
 
@@ -189,6 +190,10 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow blow)
         {
             base.OnAgentRemoved(affectedAgent, affectorAgent, agentState, blow);
+            // Take this agent's last recorded blow out of the dictionary now: nothing else ever removed it, so it grew all match.
+            Blow lastBlow;
+            bool hadBlow = registeredBlows.TryGetValue(affectedAgent, out lastBlow);
+            registeredBlows.Remove(affectedAgent);
             if (GameNetwork.IsClient)
             {
                 return;
@@ -208,9 +213,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (random.Next(100) > 100 - dropChance)
             { // FOR TESTING PURPOSES
 
-                if (registeredBlows.ContainsKey(affectedAgent))
+                if (hadBlow)
                 {
-                    this.BehadeAgent(affectedAgent, registeredBlows[affectedAgent]);
+                    this.BehadeAgent(affectedAgent, lastBlow);
                 }
             }
         }

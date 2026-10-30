@@ -43,11 +43,11 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<OpenBank>(this.HandleOpenBankServer);
+                networkMessageHandlerRegisterer.Register<OpenBank>(HandlerGuard.Wrap<OpenBank>(this.HandleOpenBankServer));
             }
             if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<RequestBankAction>(this.HandleRequestBankActionClient);
+                networkMessageHandlerRegisterer.Register<RequestBankAction>(HandlerGuard.Wrap<RequestBankAction>(this.HandleRequestBankActionClient));
             }
         }
 

@@ -220,7 +220,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         public void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode mode)
         {
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
-            networkMessageHandlerRegisterer.Register<UpdateWoundedPlayer>(this.HandleUpdateWoundedPlayer);
+            networkMessageHandlerRegisterer.Register<UpdateWoundedPlayer>(HandlerGuard.Wrap<UpdateWoundedPlayer>(this.HandleUpdateWoundedPlayer));
         }
 
         private void HandleUpdateWoundedPlayer(UpdateWoundedPlayer message)
@@ -232,7 +232,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         public void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode mode)
         {
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
-            networkMessageHandlerRegisterer.Register<RegisterClientEquipmentOnWound>(HandleRegisterClientEquipmentOnWound);
+            networkMessageHandlerRegisterer.Register<RegisterClientEquipmentOnWound>(HandlerGuard.Wrap<RegisterClientEquipmentOnWound>(HandleRegisterClientEquipmentOnWound));
         }
 
         private bool HandleRegisterClientEquipmentOnWound(NetworkCommunicator player, RegisterClientEquipmentOnWound message)

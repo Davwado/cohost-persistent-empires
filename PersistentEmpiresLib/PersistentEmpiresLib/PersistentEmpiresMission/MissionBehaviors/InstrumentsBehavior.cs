@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Client;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Client;
 using PersistentEmpiresLib.NetworkMessages.Server;
 using System;
 using System.Collections.Generic;
@@ -145,12 +146,12 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<AgentPlayingInstrument>(this.HandleAgentPlayingInstrumentFromServer);
+                networkMessageHandlerRegisterer.Register<AgentPlayingInstrument>(HandlerGuard.Wrap<AgentPlayingInstrument>(this.HandleAgentPlayingInstrumentFromServer));
             }
             else if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<RequestStartPlaying>(this.HandleRequestStartPlayingFromClient);
-                networkMessageHandlerRegisterer.Register<RequestStopPlaying>(this.HandleRequestStopPlayingFromClient);
+                networkMessageHandlerRegisterer.Register<RequestStartPlaying>(HandlerGuard.Wrap<RequestStartPlaying>(this.HandleRequestStartPlayingFromClient));
+                networkMessageHandlerRegisterer.Register<RequestStopPlaying>(HandlerGuard.Wrap<RequestStopPlaying>(this.HandleRequestStopPlayingFromClient));
             }
 
         }

@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Client;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Client;
 using PersistentEmpiresLib.NetworkMessages.Server;
 using PersistentEmpiresLib.SceneScripts;
 using PersistentEmpiresLib.SceneScripts.Extensions;
@@ -337,51 +338,51 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<SyncObjectHitpointsPE>(this.HandleSyncObjectHitpointsPE);
-                networkMessageHandlerRegisterer.Register<ResetDestructableItem>(this.HandleResetDestructableItem);
-                networkMessageHandlerRegisterer.Register<AddMissionObjectBodyFlagPE>(this.HandleAddMissionObjectBodyFlagPE);
-                networkMessageHandlerRegisterer.Register<AddPhysicsToMissionObject>(this.HandleAddPhysicsToMissionObject);
-                networkMessageHandlerRegisterer.Register<UpgradeableBuildingUpgrading>(this.UpgradeableBuildingUpgradingFromServer);
-                networkMessageHandlerRegisterer.Register<UpgradeableBuildingSetTier>(this.HandleUpgradeableBuildingSetTierFromServer);
-                networkMessageHandlerRegisterer.Register<SyncAttachToAgent>(this.HandleSyncAttachToAgentFromServer);
-                networkMessageHandlerRegisterer.Register<HorseMarketSetReserve>(this.HandleHorseMarketSetReserveFromServer);
-                networkMessageHandlerRegisterer.Register<ResetSiegeTower>(this.HandleResetSiegeTowerFromServer);
-                networkMessageHandlerRegisterer.Register<ResetBatteringRam>(this.HandleResetBatteringRamFromServer);
-                networkMessageHandlerRegisterer.Register<SetPE_BatteringRamHasArrivedAtTarget>(this.HandleSetPE_BatteringRamHasArrivedAtTargetFromServer);
-                networkMessageHandlerRegisterer.Register<SyncObjectHitpointsForDestructibleWithItem>(this.HandleSyncObjectHitpointsForDestructibleWithItemFromServer);
+                networkMessageHandlerRegisterer.Register<SyncObjectHitpointsPE>(HandlerGuard.Wrap<SyncObjectHitpointsPE>(this.HandleSyncObjectHitpointsPE));
+                networkMessageHandlerRegisterer.Register<ResetDestructableItem>(HandlerGuard.Wrap<ResetDestructableItem>(this.HandleResetDestructableItem));
+                networkMessageHandlerRegisterer.Register<AddMissionObjectBodyFlagPE>(HandlerGuard.Wrap<AddMissionObjectBodyFlagPE>(this.HandleAddMissionObjectBodyFlagPE));
+                networkMessageHandlerRegisterer.Register<AddPhysicsToMissionObject>(HandlerGuard.Wrap<AddPhysicsToMissionObject>(this.HandleAddPhysicsToMissionObject));
+                networkMessageHandlerRegisterer.Register<UpgradeableBuildingUpgrading>(HandlerGuard.Wrap<UpgradeableBuildingUpgrading>(this.UpgradeableBuildingUpgradingFromServer));
+                networkMessageHandlerRegisterer.Register<UpgradeableBuildingSetTier>(HandlerGuard.Wrap<UpgradeableBuildingSetTier>(this.HandleUpgradeableBuildingSetTierFromServer));
+                networkMessageHandlerRegisterer.Register<SyncAttachToAgent>(HandlerGuard.Wrap<SyncAttachToAgent>(this.HandleSyncAttachToAgentFromServer));
+                networkMessageHandlerRegisterer.Register<HorseMarketSetReserve>(HandlerGuard.Wrap<HorseMarketSetReserve>(this.HandleHorseMarketSetReserveFromServer));
+                networkMessageHandlerRegisterer.Register<ResetSiegeTower>(HandlerGuard.Wrap<ResetSiegeTower>(this.HandleResetSiegeTowerFromServer));
+                networkMessageHandlerRegisterer.Register<ResetBatteringRam>(HandlerGuard.Wrap<ResetBatteringRam>(this.HandleResetBatteringRamFromServer));
+                networkMessageHandlerRegisterer.Register<SetPE_BatteringRamHasArrivedAtTarget>(HandlerGuard.Wrap<SetPE_BatteringRamHasArrivedAtTarget>(this.HandleSetPE_BatteringRamHasArrivedAtTargetFromServer));
+                networkMessageHandlerRegisterer.Register<SyncObjectHitpointsForDestructibleWithItem>(HandlerGuard.Wrap<SyncObjectHitpointsForDestructibleWithItem>(this.HandleSyncObjectHitpointsForDestructibleWithItemFromServer));
                 /*networkMessageHandlerRegisterer.Register<StartMovingBackwardMoveableMachineServer>(this.HandleStartMovingBackwardMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StartMovingForwardMoveableMachineServer>(this.HandleStartMovingForwardMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StartMovingUpMoveableMachineServer>(this.HandleStartMovingUpMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StartMovingDownMoveableMachineServer>(this.HandleStartMovingDownMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StartTurningLeftMoveableMachineServer>(this.HandleStartTurningLeftMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StartTurningRightMoveableMachineServer>(this.HandleStartTurningRightMoveableMachineServer);
+				networkMessageHandlerRegisterer.Register<StartMovingForwardMoveableMachineServer>(HandlerGuard.Wrap<StartMovingForwardMoveableMachineServer>(this.HandleStartMovingForwardMoveableMachineServer));
+				networkMessageHandlerRegisterer.Register<StartMovingUpMoveableMachineServer>(HandlerGuard.Wrap<StartMovingUpMoveableMachineServer>(this.HandleStartMovingUpMoveableMachineServer));
+				networkMessageHandlerRegisterer.Register<StartMovingDownMoveableMachineServer>(HandlerGuard.Wrap<StartMovingDownMoveableMachineServer>(this.HandleStartMovingDownMoveableMachineServer));
+				networkMessageHandlerRegisterer.Register<StartTurningLeftMoveableMachineServer>(HandlerGuard.Wrap<StartTurningLeftMoveableMachineServer>(this.HandleStartTurningLeftMoveableMachineServer));
+				networkMessageHandlerRegisterer.Register<StartTurningRightMoveableMachineServer>(HandlerGuard.Wrap<StartTurningRightMoveableMachineServer>(this.HandleStartTurningRightMoveableMachineServer));
 
-				networkMessageHandlerRegisterer.Register<StopMovingBackwardMoveableMachineServer>(this.HandleStopMovingBackwardMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StopMovingForwardMoveableMachineServer>(this.HandleStopMovingForwardMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StopMovingUpMoveableMachineServer>(this.HandleStopMovingUpMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StopMovingDownMoveableMachineServer>(this.HandleStopMovingDownMoveableMachineServer);
-				networkMessageHandlerRegisterer.Register<StopTurningLeftMoveableMachineServer>(this.HandleStopTurningLeftMoveableMachineServer);
+				networkMessageHandlerRegisterer.Register<StopMovingBackwardMoveableMachineServer>(HandlerGuard.Wrap<StopMovingBackwardMoveableMachineServer>(this.HandleStopMovingBackwardMoveableMachineServer));
+				networkMessageHandlerRegisterer.Register<StopMovingForwardMoveableMachineServer>(HandlerGuard.Wrap<StopMovingForwardMoveableMachineServer>(this.HandleStopMovingForwardMoveableMachineServer));
+				networkMessageHandlerRegisterer.Register<StopMovingUpMoveableMachineServer>(HandlerGuard.Wrap<StopMovingUpMoveableMachineServer>(this.HandleStopMovingUpMoveableMachineServer));
+				networkMessageHandlerRegisterer.Register<StopMovingDownMoveableMachineServer>(HandlerGuard.Wrap<StopMovingDownMoveableMachineServer>(this.HandleStopMovingDownMoveableMachineServer));
+				networkMessageHandlerRegisterer.Register<StopTurningLeftMoveableMachineServer>(HandlerGuard.Wrap<StopTurningLeftMoveableMachineServer>(this.HandleStopTurningLeftMoveableMachineServer));
 				networkMessageHandlerRegisterer.Register<StopTurningRightMoveableMachineServer>(this.HandleStopTurningRightMoveableMachineServer);*/
 
 
-                networkMessageHandlerRegisterer.Register<UpdateItemGatheringDestroyed>(this.HandleUpdateItemGatheringDestroyedFromServer);
-                networkMessageHandlerRegisterer.Register<SetLadderBuilder>(this.HandleSetLadderBuilderFromServer);
+                networkMessageHandlerRegisterer.Register<UpdateItemGatheringDestroyed>(HandlerGuard.Wrap<UpdateItemGatheringDestroyed>(this.HandleUpdateItemGatheringDestroyedFromServer));
+                networkMessageHandlerRegisterer.Register<SetLadderBuilder>(HandlerGuard.Wrap<SetLadderBuilder>(this.HandleSetLadderBuilderFromServer));
             }
             else
             {
-                networkMessageHandlerRegisterer.Register<StartMovingUpMoveableMachine>(this.HandleFromClientStartMovingUpMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StartMovingDownMoveableMachine>(this.HandleFromClientStartMovingDownMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StartMovingForwardMoveableMachine>(this.HandleFromClientStartMovingForwardMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StartMovingBackwardMoveableMachine>(this.HandleFromClientStartMovingBackwardMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StartTurningLeftMoveableMachine>(this.HandleFromClientStartTurningLeftMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StartTurningRightMoveableMachine>(this.HandleFromClientStartTurningRightMoveableMachine);
+                networkMessageHandlerRegisterer.Register<StartMovingUpMoveableMachine>(HandlerGuard.Wrap<StartMovingUpMoveableMachine>(this.HandleFromClientStartMovingUpMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StartMovingDownMoveableMachine>(HandlerGuard.Wrap<StartMovingDownMoveableMachine>(this.HandleFromClientStartMovingDownMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StartMovingForwardMoveableMachine>(HandlerGuard.Wrap<StartMovingForwardMoveableMachine>(this.HandleFromClientStartMovingForwardMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StartMovingBackwardMoveableMachine>(HandlerGuard.Wrap<StartMovingBackwardMoveableMachine>(this.HandleFromClientStartMovingBackwardMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StartTurningLeftMoveableMachine>(HandlerGuard.Wrap<StartTurningLeftMoveableMachine>(this.HandleFromClientStartTurningLeftMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StartTurningRightMoveableMachine>(HandlerGuard.Wrap<StartTurningRightMoveableMachine>(this.HandleFromClientStartTurningRightMoveableMachine));
 
-                networkMessageHandlerRegisterer.Register<StopMovingUpMoveableMachine>(this.HandleFromClientStopMovingUpMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StopMovingDownMoveableMachine>(this.HandleFromClientStopMovingDownMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StopMovingForwardMoveableMachine>(this.HandleFromClientStopMovingForwardMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StopMovingBackwardMoveableMachine>(this.HandleFromClientStopMovingBackwardMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StopTurningLeftMoveableMachine>(this.HandleFromClientStopTurningLeftMoveableMachine);
-                networkMessageHandlerRegisterer.Register<StopTurningRightMoveableMachine>(this.HandleFromClientStopTurningRightMoveableMachine);
+                networkMessageHandlerRegisterer.Register<StopMovingUpMoveableMachine>(HandlerGuard.Wrap<StopMovingUpMoveableMachine>(this.HandleFromClientStopMovingUpMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StopMovingDownMoveableMachine>(HandlerGuard.Wrap<StopMovingDownMoveableMachine>(this.HandleFromClientStopMovingDownMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StopMovingForwardMoveableMachine>(HandlerGuard.Wrap<StopMovingForwardMoveableMachine>(this.HandleFromClientStopMovingForwardMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StopMovingBackwardMoveableMachine>(HandlerGuard.Wrap<StopMovingBackwardMoveableMachine>(this.HandleFromClientStopMovingBackwardMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StopTurningLeftMoveableMachine>(HandlerGuard.Wrap<StopTurningLeftMoveableMachine>(this.HandleFromClientStopTurningLeftMoveableMachine));
+                networkMessageHandlerRegisterer.Register<StopTurningRightMoveableMachine>(HandlerGuard.Wrap<StopTurningRightMoveableMachine>(this.HandleFromClientStopTurningRightMoveableMachine));
             }
         }
 

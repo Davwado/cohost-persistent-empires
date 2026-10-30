@@ -31,8 +31,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         private void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode mode)
         {
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
-            networkMessageHandlerRegisterer.Register<LocalMessage>(HandleLocalMessageFromClient);
-            networkMessageHandlerRegisterer.Register<ShoutMessage>(HandleShoutMessageFromClient);
+            networkMessageHandlerRegisterer.Register<LocalMessage>(HandlerGuard.Wrap<LocalMessage>(HandleLocalMessageFromClient));
+            networkMessageHandlerRegisterer.Register<ShoutMessage>(HandlerGuard.Wrap<ShoutMessage>(HandleShoutMessageFromClient));
             // Not registered: the Workshop build has no PlayerIsTyping messages and message ids are assigned by sorted type name,
             // so an extra type would shift every id and break the client. See port/README.md.
         }
@@ -160,9 +160,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         private void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode mode)
         {
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
-            networkMessageHandlerRegisterer.Register<LocalMessageServer>(this.HandleLocalMessageFromServer);
-            networkMessageHandlerRegisterer.Register<ShoutMessageServer>(this.HandleShoutMessageFromServer);
-            networkMessageHandlerRegisterer.Register<CustomBubbleMessage>(this.HandleCustomBubbleMessageFromServer);
+            networkMessageHandlerRegisterer.Register<LocalMessageServer>(HandlerGuard.Wrap<LocalMessageServer>(this.HandleLocalMessageFromServer));
+            networkMessageHandlerRegisterer.Register<ShoutMessageServer>(HandlerGuard.Wrap<ShoutMessageServer>(this.HandleShoutMessageFromServer));
+            networkMessageHandlerRegisterer.Register<CustomBubbleMessage>(HandlerGuard.Wrap<CustomBubbleMessage>(this.HandleCustomBubbleMessageFromServer));
         }
 
         private void HandleCustomBubbleMessageFromServer(CustomBubbleMessage message)

@@ -1,4 +1,5 @@
-﻿using PersistentEmpiresLib.NetworkMessages.Client;
+﻿using PersistentEmpiresLib.Helpers;
+using PersistentEmpiresLib.NetworkMessages.Client;
 using PersistentEmpiresLib.SceneScripts;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<PreferredSpawnPoint>(this.HandlePreferredSpawnPoint);
+                networkMessageHandlerRegisterer.Register<PreferredSpawnPoint>(HandlerGuard.Wrap<PreferredSpawnPoint>(this.HandlePreferredSpawnPoint));
             }
         }
 

@@ -44,12 +44,12 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<RequestDropMoney>(this.HandleRequestDropMoney);
-                networkMessageHandlerRegisterer.Register<RequestRevealMoneyPouch>(this.HandleRequestRevealMoneyPouch);
+                networkMessageHandlerRegisterer.Register<RequestDropMoney>(HandlerGuard.Wrap<RequestDropMoney>(this.HandleRequestDropMoney));
+                networkMessageHandlerRegisterer.Register<RequestRevealMoneyPouch>(HandlerGuard.Wrap<RequestRevealMoneyPouch>(this.HandleRequestRevealMoneyPouch));
             }
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<RevealMoneyPouchServer>(this.HandleRevealMoneyPouchServer);
+                networkMessageHandlerRegisterer.Register<RevealMoneyPouchServer>(HandlerGuard.Wrap<RevealMoneyPouchServer>(this.HandleRevealMoneyPouchServer));
             }
         }
 
@@ -114,12 +114,16 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 if (this.MoneyBagCreatedAt[moneyBag] + 600 < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
                 {
                     this.MoneyBagCreatedAt.Remove(moneyBag);
-                    if (moneyBag.GameEntity != null)
-                    {
-                        moneyBag.GameEntity.Remove(80);
-                    }
+                    EntityHelper.RemoveOnce(moneyBag, moneyBag.GameEntity, 80);
                 }
             }
+        }
+
+        public override void OnPlayerDisconnectedFromServer(NetworkCommunicator player)
+        {
+            base.OnPlayerDisconnectedFromServer(player);
+            this.LastDroppedMoney.Remove(player);
+            this.LastReveal.Remove(player);
         }
 
         private void DropMoney(MatrixFrame frame, int amount)

@@ -101,9 +101,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsClient)
             {
-                networkMessageHandlerRegisterer.Register<AuthorizeAsAdmin>(this.HandleAuthorizeAsAdminFromServer);
-                networkMessageHandlerRegisterer.Register<ToggleVisibilityForAgent>(this.HandleToggleVisibilityForAgent);
-                networkMessageHandlerRegisterer.Register<BroadcastChangeCustomColors>(this.HandleBroadcastChangeCustomColors);
+                networkMessageHandlerRegisterer.Register<AuthorizeAsAdmin>(HandlerGuard.Wrap<AuthorizeAsAdmin>(this.HandleAuthorizeAsAdminFromServer));
+                networkMessageHandlerRegisterer.Register<ToggleVisibilityForAgent>(HandlerGuard.Wrap<ToggleVisibilityForAgent>(this.HandleToggleVisibilityForAgent));
+                networkMessageHandlerRegisterer.Register<BroadcastChangeCustomColors>(HandlerGuard.Wrap<BroadcastChangeCustomColors>(this.HandleBroadcastChangeCustomColors));
             }
         }
 
