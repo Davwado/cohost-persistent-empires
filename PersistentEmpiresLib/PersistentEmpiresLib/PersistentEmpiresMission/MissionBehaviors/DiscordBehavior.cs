@@ -157,7 +157,14 @@ namespace PersistentEmpiresServer.ServerMissions
             });
         }
 
-        public static void NotifyException(Exception ex, bool record = true)
+        // Kept with this exact signature: the Save assembly calls it, and a method gaining a parameter is a different method to an
+        // already compiled caller (that is a MissingMethodException, which aborted the server while a match loaded).
+        public static void NotifyException(Exception ex)
+        {
+            NotifyException(ex, true);
+        }
+
+        public static void NotifyException(Exception ex, bool record)
         {
             if (record) PersistentEmpiresLib.Helpers.ErrorGuard.Record("unhandled exception", ex);
             // Without a webhook these exceptions used to disappear; keep them in the server log.
