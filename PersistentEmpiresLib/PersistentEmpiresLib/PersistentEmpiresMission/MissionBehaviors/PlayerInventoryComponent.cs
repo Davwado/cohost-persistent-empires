@@ -115,7 +115,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                     this.LootableCreatedAt.Remove(inventoryId);
                     if (this.CustomInventories.ContainsKey(inventoryId) && this.LootableObjects.ContainsKey(inventoryId))
                     {
-                        this.LootableObjects[inventoryId].GameEntity.Remove(0);
+                        this.RemoveLootEntity(inventoryId);
                     }
                 }
             }
@@ -389,6 +389,16 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             return ClosedInventoryOnServer(player, message.InventoryId);
         }
 
+        // Takes a loot bag out of the scene and stops tracking it, so nothing reads the removed entity afterwards.
+        private void RemoveLootEntity(string inventoryId)
+        {
+            PE_InventoryEntity entity;
+            if (!this.LootableObjects.TryGetValue(inventoryId, out entity)) return;
+            this.LootableObjects.Remove(inventoryId);
+            this.LootableCreatedAt.Remove(inventoryId);
+            if (entity != null && entity.GameEntity != null) entity.GameEntity.Remove(0);
+        }
+
         private bool HandleRequestDropItemFromInventory(NetworkCommunicator player, RequestDropItemFromInventory message)
         {
             try
@@ -490,6 +500,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             PE_InventoryEntity droppedLoot = null;
             foreach (PE_InventoryEntity entity in this.LootableObjects.Values.ToList())
             {
+                // An entity that was removed from the scene must never be touched: reading its frame is a native call on freed memory.
+                if (entity == null || entity.GameEntity == null || !this.CustomInventories.ContainsKey(entity.InventoryId)) continue;
                 float distance = entity.GameEntity.GetGlobalFrame().origin.Distance(player.ControlledAgent.Position);
                 if (distance <= 5)
                 {
@@ -1145,7 +1157,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 }
                 if (targetInventory.IsConsumable && targetInventory.IsInventoryEmpty())
                 {
-                    this.LootableObjects[targetInventory.InventoryId].GameEntity.Remove(0);
+                    this.RemoveLootEntity(targetInventory.InventoryId);
                 }
 
             }
@@ -1165,7 +1177,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 }
                 if (targetInventory.IsConsumable && targetInventory.IsInventoryEmpty())
                 {
-                    this.LootableObjects[targetInventory.InventoryId].GameEntity.Remove(0);
+                    this.RemoveLootEntity(targetInventory.InventoryId);
                 }
             }
             return true;

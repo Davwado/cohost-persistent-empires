@@ -142,7 +142,7 @@ namespace PersistentEmpiresClient.ViewsVM
             if (lastRenderedIndex == ItemsList.Count) return;
 
             int maxIndex = (ItemsList.Count - lastRenderedIndex) > maxItemsRenderedPerTick ? lastRenderedIndex + maxItemsRenderedPerTick : ItemsList.Count;
-            for (int i = lastRenderedIndex; i < maxIndex - 1; i++)
+            for (int i = lastRenderedIndex; i < maxIndex; i++)
             {
                 dynamic item = ItemsList[i];
                 if (this.NameFilter != null && this.NameFilter != "" && !item.Item.Name.ToString().ToLower().Contains(this.NameFilter.ToLower())) continue;

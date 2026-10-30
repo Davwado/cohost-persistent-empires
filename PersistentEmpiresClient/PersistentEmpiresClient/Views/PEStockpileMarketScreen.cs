@@ -34,11 +34,20 @@ namespace PersistentEmpires.Views.Views
             {
                 for (int i = 0; i < indexes.Count; i++)
                 {
-                    int index = indexes[i];
-                    int stock = stocks[i];
-                    this._dataSource.ItemsList[index].Stock = stock;
+                    this.SetRowStock(indexes[i], stocks[i]);
                 }
                 this._dataSource.OnPropertyChanged("FilteredItemList");
+            }
+        }
+
+        // The rows copy the stock when they are created, so the market item alone is not enough: update the rows on screen too.
+        private void SetRowStock(int itemIndex, int stock)
+        {
+            if (itemIndex < 0 || itemIndex >= this._dataSource.ItemsList.Count) return;
+            this._dataSource.ItemsList[itemIndex].Stock = stock;
+            foreach (PEStockpileMarketItemVM row in this._dataSource.FilteredItemList)
+            {
+                if (row.ItemIndex == itemIndex) row.Stock = stock;
             }
         }
 
@@ -46,9 +55,7 @@ namespace PersistentEmpires.Views.Views
         {
             if (this.IsActive)
             {
-                Console.WriteLine(itemIndex);
-                Console.WriteLine(this._dataSource.FilteredItemList.ToString());
-                this._dataSource.ItemsList[itemIndex].Stock = newStock;
+                this.SetRowStock(itemIndex, newStock);
                 this._dataSource.OnPropertyChanged("FilteredItemList");
             }
         }
