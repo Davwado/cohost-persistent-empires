@@ -266,7 +266,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (targetRepresentative == null || pollCreatorRepresentative == null) return;
 
             Faction f = targetRepresentative.GetFaction();
-            if (pollCreatorPeer.Index == targetPeer.Index && f.lordId != targetPeer.VirtualPlayer.ToPlayerId() && targetRepresentative.IsAdmin == false)
+            // Nominating yourself is only refused while the faction still has a lord. A faction whose lord left has nobody else who
+            // could be asked to start the poll for a lone member, so it could never get a lord again.
+            if (pollCreatorPeer.Index == targetPeer.Index && !string.IsNullOrEmpty(f.lordId) && f.lordId != targetPeer.VirtualPlayer.ToPlayerId() && targetRepresentative.IsAdmin == false)
             {
                 InformationComponent.Instance.SendMessage(GameTexts.FindText("FactionPollComponent4", null).ToString(), Color.ConvertStringToColor("#d32f2fff").ToUnsignedInteger(), pollCreatorPeer);
                 return;
@@ -292,7 +294,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 this._informationComponent.SendMessage(GameTexts.FindText("FactionPollComponent8", null).ToString(), Color.ConvertStringToColor("#FF0000FF").ToUnsignedInteger(), pollCreatorPeer);
                 return;
             }
-            if (!pollCreatorRepresentative.ReduceIfHaveEnoughGold(LordPollRequiredGold))
+            if (!pollCreatorRepresentative.HaveEnoughGold(LordPollRequiredGold))
             {
                 InformationComponent.Instance.SendMessage(GameTexts.FindText("FactionPollComponent9", null).ToString() + LordPollRequiredGold.ToString() + GameTexts.FindText("FactionPollComponent10", null).ToString(), (new Color(1f, 0, 0)).ToUnsignedInteger(), pollCreatorPeer);
                 return;
@@ -310,6 +312,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                     return;
                 }
             }
+            if (!pollCreatorRepresentative.ReduceIfHaveEnoughGold(LordPollRequiredGold)) return;
             this.OpenLordPoll(targetPeer, pollCreatorPeer);
             foreach (NetworkCommunicator player in this._ongoingPolls[targetRepresentative.GetFactionIndex()].ParticipantsToVote)
             {
