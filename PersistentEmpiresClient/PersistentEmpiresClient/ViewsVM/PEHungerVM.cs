@@ -9,10 +9,31 @@ namespace PersistentEmpires.Views.ViewsVM
     public class PEHungerVM : MissionAgentStatusVM
     {
         private int _hunger;
+        private bool _isWounded;
 
         public PEHungerVM(int Hunger, Mission mission, Camera missionCamera, Func<float> getCameraToggleProgress) : base(mission, missionCamera, getCameraToggleProgress)
         {
             this.Hunger = Hunger;
+        }
+
+        [DataSourceProperty]
+        public bool IsWounded
+        {
+            get => this._isWounded;
+            set
+            {
+                if (value != this._isWounded)
+                {
+                    this._isWounded = value;
+                    base.OnPropertyChangedWithValue(value, "IsWounded");
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public string WoundedText
+        {
+            get => "WOUNDED";
         }
 
         [DataSourceProperty]

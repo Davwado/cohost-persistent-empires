@@ -14,6 +14,8 @@
       </Widget>
       <!--<Compass />-->
 
+      <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="90" Brush="AgentHUD.Interaction.Text" Brush.FontColor="#FF3B30FF" Brush.FontSize="30" Text="@WoundedText" IsVisible="@IsWounded" />
+
       <ValueBasedVisibilityWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="150" WatchType="BiggerThan" IndexToBeVisibleFloat="0" IndexToWatchFloat="@CameraToggleProgress">
         <Children>
 

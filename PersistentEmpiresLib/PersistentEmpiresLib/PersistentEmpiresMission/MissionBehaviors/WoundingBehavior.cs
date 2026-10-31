@@ -17,7 +17,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
     {
         public static WoundingBehavior Instance;
         public bool WoundingEnabled = false;
-        public int WoundingTime = 60;
+        public int WoundingTime = 300; // seconds
         public string ItemId = "pe_doctorscalpel";
         public int RequiredMedicineSkillForHealing = 50;
 
@@ -83,7 +83,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             }
 
             WoundingEnabled = ConfigManager.GetBoolConfig("WoundingEnabled", false);
-            WoundingTime = ConfigManager.GetIntConfig("WoundingTimeMinutes", 60);
+            WoundingTime = ConfigManager.GetIntConfig("WoundingTimeSeconds", 300);
             AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode.Add);
         }
 
@@ -193,7 +193,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 if (blow.WeaponRecordWeaponFlags != 0 || blow.OverrideKillInfo == Agent.KillInfo.Gravity)
                 {
                     // otherwise get new heal time
-                    var woundTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + (WoundingTime * 60);
+                    var woundTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + WoundingTime;
                     WoundedUntil[player.VirtualPlayer?.ToPlayerId()] = new KeyValuePair<bool, long>(false, woundTime);
                     IsWounded[player.VirtualPlayer?.ToPlayerId()] = true;
                     var persistentEmpireRepresentative = player.GetComponent<PersistentEmpireRepresentative>();
@@ -348,7 +348,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (communicator == null) return;
             if (!WoundedUntil.ContainsKey(communicator.VirtualPlayer?.ToPlayerId()) || WoundedUntil[communicator.VirtualPlayer?.ToPlayerId()].Key) return;
 
-            var deductedTime = WoundedUntil[communicator.VirtualPlayer?.ToPlayerId()].Value - (WoundingTime * 30);
+            var deductedTime = WoundedUntil[communicator.VirtualPlayer?.ToPlayerId()].Value - (WoundingTime / 2);
             WoundedUntil[communicator.VirtualPlayer?.ToPlayerId()] = new KeyValuePair<bool, long>(true, deductedTime);
             var persistentEmpireRepresentative = communicator.GetComponent<PersistentEmpireRepresentative>();
             persistentEmpireRepresentative.SetWounded(deductedTime);

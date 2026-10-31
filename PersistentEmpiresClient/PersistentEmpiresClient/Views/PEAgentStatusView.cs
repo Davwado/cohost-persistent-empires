@@ -138,8 +138,17 @@ namespace PersistentEmpires.Views.Views
             if (this._dataSource == null) return;
             this._dataSource.IsInDeployement = this._isInDeployement;
             this._dataSource.Tick(dt);
+            this.UpdateWoundedIndicator();
             this._dataSource.InteractionInterface.DisplayInteractionText = !base.MissionScreen.IsRadialMenuActive && !base.Mission.IsOrderMenuOpen;
             this.UpdateFocusedHealth();
+        }
+
+        // Shows "WOUNDED" while the server says the local player is wounded (the same flag the movement penalty uses).
+        private void UpdateWoundedIndicator()
+        {
+            NetworkCommunicator me = GameNetwork.MyPeer;
+            WoundingBehavior wounding = WoundingBehavior.Instance;
+            this._dataSource.IsWounded = me != null && wounding != null && me.VirtualPlayer != null && wounding.IsPlayerWounded(me);
         }
 
         // PE objects that can be damaged show their hit points in the interaction prompt.
