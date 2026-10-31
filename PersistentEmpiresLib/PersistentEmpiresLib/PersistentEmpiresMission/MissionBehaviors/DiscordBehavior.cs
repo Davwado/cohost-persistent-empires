@@ -99,6 +99,9 @@ namespace PersistentEmpiresServer.ServerMissions
 
         public static void NotifyLog(PersistentEmpiresLib.Database.DBEntities.DBLog dbLog)
         {
+            // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
+            // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
+            if (!DiscordLogEnabled || string.IsNullOrEmpty(DiscordLogUrl)) return;
             Task.Run(() =>
             {
                 if (!DiscordLogEnabled || string.IsNullOrEmpty(DiscordLogUrl))
@@ -169,6 +172,9 @@ namespace PersistentEmpiresServer.ServerMissions
             if (record) PersistentEmpiresLib.Helpers.ErrorGuard.Record("unhandled exception", ex);
             // Without a webhook these exceptions used to disappear; keep them in the server log.
             TaleWorlds.Library.Debug.Print("*PERSISTENT EMPIRES* Exception: " + ex, 0, TaleWorlds.Library.Debug.DebugColor.Red);
+            // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
+            // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
+            if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl)) return;
             Task.Run(() =>
             {
                 if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl))
@@ -243,6 +249,9 @@ namespace PersistentEmpiresServer.ServerMissions
 
         public static void NotifyException(string ex)
         {
+            // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
+            // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
+            if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl)) return;
             Task.Run(() =>
             {
                 if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl))
@@ -279,6 +288,9 @@ namespace PersistentEmpiresServer.ServerMissions
 
         public static void NotifyServerStatus(string message, string color)
         {
+            // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
+            // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
+            if (!DiscordServeStatusEnabled || string.IsNullOrEmpty(DiscordServeStatusUrl)) return;
             Task.Run(() =>
             {
                 if (!DiscordServeStatusEnabled || string.IsNullOrEmpty(DiscordServeStatusUrl))
@@ -310,6 +322,9 @@ namespace PersistentEmpiresServer.ServerMissions
 
         public static void NotifyAdminMessage(NetworkCommunicator player, string message)
         {
+            // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
+            // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
+            if (!DiscordAdminMessageEnabled || string.IsNullOrEmpty(DiscordAdminMessageUrl)) return;
             Task.Run(() =>
             {
                 if (!DiscordAdminMessageEnabled || string.IsNullOrEmpty(DiscordAdminMessageUrl))
@@ -342,6 +357,9 @@ namespace PersistentEmpiresServer.ServerMissions
 
         public static void NotifyAnnounce(string user, string message)
         {
+            // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
+            // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
+            if (!DiscordAnnounceEnabled || string.IsNullOrEmpty(DiscordAnnounceUrl)) return;
             Task.Run(() =>
             {
                 if (!DiscordAnnounceEnabled || string.IsNullOrEmpty(DiscordAnnounceUrl))
