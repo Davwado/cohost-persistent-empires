@@ -237,6 +237,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         private bool HandleRegisterClientEquipmentOnWound(NetworkCommunicator player, RegisterClientEquipmentOnWound message)
         {
+            // The report names a player id; a modified client could name someone else and strip that player's wounded respawn kit.
+            if (player == null || message.PlayerId != player.VirtualPlayer?.ToPlayerId()) return false;
             lock (_lock)
             {
                 if (DeathEquipment.ContainsKey(message.PlayerId))

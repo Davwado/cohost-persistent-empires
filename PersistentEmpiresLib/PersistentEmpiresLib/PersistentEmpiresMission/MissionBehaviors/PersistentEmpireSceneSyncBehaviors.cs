@@ -540,86 +540,97 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             ((PE_UpgradeableBuildings)message.UpgradingObject).SetIsUpgrading(message.IsUpgrading);
         }
 
+        // A machine (ship, siege engine) can only be driven by a player close to it. The message names the object, so without this
+        // a modified client could move any machine on the map from anywhere.
+        private bool CanControlMachine(NetworkCommunicator player, object machine)
+        {
+            if (player == null || player.ControlledAgent == null || !player.ControlledAgent.IsActive()) return false;
+            MissionObject missionObject = machine as MissionObject;
+            if (missionObject == null) return false;
+            if (!missionObject.GameEntity.IsValid) return false;
+            return missionObject.GameEntity.GetGlobalFrame().origin.Distance(player.ControlledAgent.Position) <= 40f;
+        }
+
         private bool HandleFromClientStopTurningRightMoveableMachine(NetworkCommunicator player, StopTurningRightMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StopTurningRight();
             return true;
         }
 
         private bool HandleFromClientStopTurningLeftMoveableMachine(NetworkCommunicator player, StopTurningLeftMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StopTurningLeft();
             return true;
         }
 
         private bool HandleFromClientStopMovingBackwardMoveableMachine(NetworkCommunicator player, StopMovingBackwardMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StopMovingBackward();
             return true;
         }
 
         private bool HandleFromClientStopMovingForwardMoveableMachine(NetworkCommunicator player, StopMovingForwardMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StopMovingForward();
             return true;
         }
 
         private bool HandleFromClientStopMovingDownMoveableMachine(NetworkCommunicator player, StopMovingDownMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StopMovingDown();
             return true;
         }
 
         private bool HandleFromClientStopMovingUpMoveableMachine(NetworkCommunicator player, StopMovingUpMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StopMovingUp();
             return true;
         }
 
         private bool HandleFromClientStartTurningRightMoveableMachine(NetworkCommunicator player, StartTurningRightMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StartTurningRight();
             return true;
         }
 
         private bool HandleFromClientStartTurningLeftMoveableMachine(NetworkCommunicator player, StartTurningLeftMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StartTurningLeft();
             return true;
         }
 
         private bool HandleFromClientStartMovingBackwardMoveableMachine(NetworkCommunicator player, StartMovingBackwardMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StartMovingBackward();
             return true;
         }
 
         private bool HandleFromClientStartMovingForwardMoveableMachine(NetworkCommunicator player, StartMovingForwardMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StartMovingForward();
             return true;
         }
 
         private bool HandleFromClientStartMovingDownMoveableMachine(NetworkCommunicator player, StartMovingDownMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StartMovingDown();
             return true;
         }
 
         private bool HandleFromClientStartMovingUpMoveableMachine(NetworkCommunicator player, StartMovingUpMoveableMachine message)
         {
-            if (player.ControlledAgent == null) return false;
+            if (!CanControlMachine(player, message.Object)) return false;
             ((IMoveable)message.Object).StartMovingUp();
             return true;
         }

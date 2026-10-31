@@ -364,7 +364,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         private bool HandleRequestOpenInventoryFromClient(NetworkCommunicator player, RequestOpenInventory message)
         {
-            this.OpenInventoryForPeer(player, message.InventoryId);
+            // The real client only sends an empty id here (its own inventory screen). Chests and bags are opened by the server when the
+            // player uses them, after the key and distance checks; a client naming an inventory id itself would skip those checks.
+            this.OpenInventoryForPeer(player, "");
             return true;
         }
 
@@ -426,12 +428,14 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (player.ControlledAgent == null || player.ControlledAgent.IsActive() == false) return false;
             string[] dropTag = message.DropTag.Split('_');
             string inventory = string.Join("_", dropTag.Take(dropTag.Length - 1));
-            int draggedIndex = int.Parse(dropTag.Last());
+            int draggedIndex;
+            if (!int.TryParse(dropTag.Last(), out draggedIndex) || draggedIndex < 0) return false;   // the tag is text from the client
             ItemObject droppedItem = null;
             int droppedCount = 0;
             int droppedAmmo = 0;
             PersistentEmpireRepresentative persistentEmpireRepresentative = player.GetComponent<PersistentEmpireRepresentative>();
             if (persistentEmpireRepresentative == null) return false;
+            if (inventory == "Equipment" ? draggedIndex >= (int)EquipmentIndex.NumEquipmentSetSlots : inventory == "PlayerInventory" && draggedIndex >= persistentEmpireRepresentative.GetInventory().Slots.Count) return false;
             if (inventory == "Equipment")
             {
                 Equipment currentEquipment = AgentHelpers.GetCurrentAgentEquipment(player.ControlledAgent);
@@ -481,6 +485,10 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             }
             else if (this.CustomInventories.ContainsKey(inventory))
             {
+                // only the chest or bag this player has open (the server opened it after its key and distance checks)
+                Inventory openedInventory;
+                this.OpenedByPeerInventory.TryGetValue(player, out openedInventory);
+                if (!this.SlotInRange(persistentEmpireRepresentative, openedInventory, inventory, draggedIndex)) return false;
                 Inventory sourceInventory = this.CustomInventories[inventory];
                 InventorySlot slot = sourceInventory.Slots[draggedIndex];
                 if (slot.Item == null || slot.Count == 0)
@@ -700,7 +708,11 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (persistentEmpireRepresentative == null) return false;
             string[] inventoryTag = message.ClickedTag.Split('_');
             string inventory = string.Join("_", inventoryTag.Take(inventoryTag.Length - 1));
-            int slot = int.Parse(inventoryTag.Last());
+            int slot;
+            Inventory openedInventory;
+            this.OpenedByPeerInventory.TryGetValue(player, out openedInventory);
+            // The tag is text from the client: the slot must exist in the player's own inventory or the chest they have open.
+            if (!int.TryParse(inventoryTag.Last(), out slot) || !this.SlotInRange(persistentEmpireRepresentative, openedInventory, inventory, slot)) return false;
             if (inventory == "PlayerInventory")
             {
                 Inventory sourceInventory = persistentEmpireRepresentative.GetInventory();
@@ -794,7 +806,11 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
             string[] inventoryTag = message.ClickedTag.Split('_');
             string inventory = string.Join("_", inventoryTag.Take(inventoryTag.Length - 1));
-            int slot = int.Parse(inventoryTag.Last());
+            int slot;
+            Inventory openedInventory;
+            this.OpenedByPeerInventory.TryGetValue(player, out openedInventory);
+            // The tag is text from the client: the slot must exist in the player's own inventory or the chest they have open.
+            if (!int.TryParse(inventoryTag.Last(), out slot) || !this.SlotInRange(persistentEmpireRepresentative, openedInventory, inventory, slot)) return false;
             // If clicked in Equipment Inventory
             if (inventory == "Equipment")
             {
@@ -881,6 +897,17 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             return true;
         }
 
+        // True when 'name' is the player's own inventory, their equipment, or the one chest/bag they have open, and the slot exists.
+        private bool SlotInRange(PersistentEmpireRepresentative representative, Inventory opened, string name, int slot)
+        {
+            if (slot < 0) return false;
+            if (name == "Equipment") return slot < (int)EquipmentIndex.NumEquipmentSetSlots;
+            if (name == "PlayerInventory") return slot < representative.GetInventory().Slots.Count;
+            Inventory custom;
+            if (!this.CustomInventories.TryGetValue(name, out custom) || custom == null) return false;
+            return ReferenceEquals(custom, opened) && slot < custom.Slots.Count;
+        }
+
         private bool TransferInventoryItem(NetworkCommunicator player, string DroppedTag, string DraggedTag)
         {
             if (DroppedTag == DraggedTag) return false;
@@ -891,8 +918,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             string[] droppedTag = DroppedTag.Split('_');
             string draggedFromInventory = string.Join("_", draggedTag.Take(draggedTag.Length - 1));
             string droppedToInventory = string.Join("_", droppedTag.Take(droppedTag.Length - 1));
-            int draggedIndex = int.Parse(draggedTag.Last());
-            int droppedIndex = int.Parse(droppedTag.Last());
+            int draggedIndex, droppedIndex;
+            // Both tags are text from the client: reject anything that is not a slot number.
+            if (!int.TryParse(draggedTag.Last(), out draggedIndex) || !int.TryParse(droppedTag.Last(), out droppedIndex) || draggedIndex < 0 || droppedIndex < 0) return false;
             ItemObject draggedItem = null;
             InventorySlot itemAddedFrom = null;
             int draggedAmmo = 0;
@@ -900,6 +928,13 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             PersistentEmpireRepresentative persistentEmpireRepresentative = player.GetComponent<PersistentEmpireRepresentative>();
             if (persistentEmpireRepresentative == null) return false;
             if (player.ControlledAgent == null) return false;
+
+            // A chest or loot bag can only be used by the player it was opened for (the server opens it after its own key and distance
+            // checks). Naming another inventory's id from a modified client must not reach it, and slot numbers must exist.
+            Inventory openedInventory;
+            this.OpenedByPeerInventory.TryGetValue(player, out openedInventory);
+            if (!this.SlotInRange(persistentEmpireRepresentative, openedInventory, draggedFromInventory, draggedIndex)) return false;
+            if (!this.SlotInRange(persistentEmpireRepresentative, openedInventory, droppedToInventory, droppedIndex)) return false;
 
             if (this.CustomInventories.ContainsKey(draggedFromInventory) && this.CustomInventories[draggedFromInventory].TiedEntity != null && this.CustomInventories[draggedFromInventory].TiedEntity.GameEntity != null && this.CustomInventories[draggedFromInventory].TiedEntity.GameEntity.GetGlobalFrame().origin.Distance(player.ControlledAgent.Position) > 10f)
             {
@@ -911,6 +946,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 if (player.ControlledAgent == null) return false;
                 Equipment agentEquipment = AgentHelpers.GetCurrentAgentEquipment(player.ControlledAgent);
                 draggedItem = agentEquipment[draggedIndex].IsEmpty ? null : agentEquipment[draggedIndex].Item;
+                if (draggedItem == null) return false;
                 if (draggedItem.ItemType == ItemObject.ItemTypeEnum.Arrows ||
                     draggedItem.ItemType == ItemObject.ItemTypeEnum.Bolts ||
                     draggedItem.ItemType == ItemObject.ItemTypeEnum.Bullets)

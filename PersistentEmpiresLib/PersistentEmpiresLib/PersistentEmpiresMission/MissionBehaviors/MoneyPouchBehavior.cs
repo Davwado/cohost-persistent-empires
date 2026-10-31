@@ -174,11 +174,11 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             {
                 return false;
             }
+            if (peer.ControlledAgent == null) return false;   // checked before taking the gold, which used to vanish
             if (!persistentEmpireRepresentative.ReduceIfHaveEnoughGold(message.Amount))
             {
                 return false;
             }
-            if (peer.ControlledAgent == null) return false;
 
             MatrixFrame frame = peer.ControlledAgent.Frame;
             this.DropMoney(frame, message.Amount);

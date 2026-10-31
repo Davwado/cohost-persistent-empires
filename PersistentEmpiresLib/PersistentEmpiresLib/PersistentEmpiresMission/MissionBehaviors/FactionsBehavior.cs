@@ -543,7 +543,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 this._informationComponent.SendAnnouncementToPlayer(GameTexts.FindText("FactionsBehavior28", null).ToString(), player, Colors.Red.ToUnsignedInteger());
                 return false;
             }
-            if (message.FactionIndex <= 1)
+            if (message.FactionIndex <= 1 || !this.Factions.ContainsKey(message.FactionIndex))   // the index comes from the client
             {
                 this._informationComponent.SendAnnouncementToPlayer(GameTexts.FindText("FactionsBehavior29", null).ToString(), player, Colors.Red.ToUnsignedInteger());
                 return false;
@@ -584,7 +584,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 this._informationComponent.SendAnnouncementToPlayer(GameTexts.FindText("FactionsBehavior32", null).ToString(), player, Colors.Red.ToUnsignedInteger());
                 return false;
             }
-            if (message.FactionIndex <= 1)
+            if (message.FactionIndex <= 1 || !this.Factions.ContainsKey(message.FactionIndex))   // the index comes from the client
             {
                 this._informationComponent.SendAnnouncementToPlayer(GameTexts.FindText("FactionsBehavior29", null).ToString(), player, Colors.Red.ToUnsignedInteger());
                 return false;

@@ -61,6 +61,8 @@ namespace PersistentEmpires.Views.Views
         private bool IsRecording = false;
         private bool SelfRecording = false;
         private bool VoiceChatEnabled = true;
+        private bool ServerAllowsVoiceChat = false;
+        private bool _optionsHooked = false;
         private OpusEncoder opusEncoder;
         private float inputGain = 1f;
         // private OpusDecoder opusDecoder;
@@ -144,19 +146,27 @@ namespace PersistentEmpires.Views.Views
             if (message != null)
             {
                 VoiceChatEnabled = message.Enabled;
+                ServerAllowsVoiceChat = message.Enabled;
+
+                this._proximityChatComponent = base.Mission.GetMissionBehavior<ProximityChatComponent>();
+                // The escape menu button always exists, so it is wired up even when the server has voice chat off (it then says so).
+                // It used to be wired only when voice chat was on: the button did nothing and gave no reason.
+                if (this._proximityChatComponent != null && !_optionsHooked)
+                {
+                    this._proximityChatComponent.OnOptionsClicked += HandleOptionsClicked;
+                    _optionsHooked = true;
+                }
                 if (!message.Enabled)
                 {
                     return;
                 }
 
-                this._proximityChatComponent = base.Mission.GetMissionBehavior<ProximityChatComponent>();
                 if (this._proximityChatComponent != null)
                 {
                     this.IsActive = true;
                     this._proximityChatComponent.OnVoicePlayMessage += HandleVoicePlayMessage;
                     this._proximityChatComponent.OnVoicePlayerJoined += HandleVoicePlayerJoined;
                     this._proximityChatComponent.OnVoicePlayerLeaved += HandleVoicePlayerLeaved;
-                    this._proximityChatComponent.OnOptionsClicked += HandleOptionsClicked;
                 }
                 try
                 {
@@ -210,6 +220,16 @@ namespace PersistentEmpires.Views.Views
         }
         private void ApplyOptions(int inputDevice, int inputGain, int outputDevice, int outputGain, bool vcEnabled)
         {
+            if (outputStream == null || sourceStream == null)
+            {
+                // Starting the audio devices failed when the match loaded (no microphone or speaker found): try again now.
+                try { InitializeVoiceChatComponents(); }
+                catch (Exception)
+                {
+                    InformationManager.DisplayMessage(new InformationMessage("Voice chat could not start: no working microphone or speaker was found.", Color.ConvertStringToColor("#FF0000FF")));
+                    return;
+                }
+            }
             outputStream.DeviceNumber = outputDevice;
             sourceStream.DeviceNumber = inputDevice;
 
@@ -262,6 +282,17 @@ namespace PersistentEmpires.Views.Views
 
         private void HandleOptionsClicked()
         {
+            if (!ServerAllowsVoiceChat)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("Voice chat is turned off on this server.", Color.ConvertStringToColor("#FF0000FF")));
+                return;
+            }
+            if (this._dataSource == null)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("Voice chat is not ready yet. Try again in a moment.", Color.ConvertStringToColor("#FF0000FF")));
+                return;
+            }
+            if (this._gauntletLayer != null) return;   // already open
             this.OpenOptionsMenu();
         }
         private void OpenOptionsMenu()

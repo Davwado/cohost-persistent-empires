@@ -96,6 +96,7 @@ namespace PersistentEmpiresLib.SceneScripts
         public void WithdrawGold(NetworkCommunicator withdrawer, int amount)
         {
             PersistentEmpireRepresentative persistentEmpireRepresentative = withdrawer.GetComponent<PersistentEmpireRepresentative>();
+            if (persistentEmpireRepresentative == null || amount <= 0) return;   // the amount comes from the client
 
             if ((this.GetFaction() == null || (this.GetFaction().lordId != withdrawer.VirtualPlayer.ToPlayerId() && this.IsBroken() == false)) && this.NoPerm != true)
             {
@@ -123,6 +124,7 @@ namespace PersistentEmpiresLib.SceneScripts
         public void DepositGold(NetworkCommunicator depositer, int amount)
         {
             PersistentEmpireRepresentative persistentEmpireRepresentative = depositer.GetComponent<PersistentEmpireRepresentative>();
+            if (persistentEmpireRepresentative == null || amount <= 0) return;   // the amount comes from the client
 
             if (this.NoPerm == false)
             {

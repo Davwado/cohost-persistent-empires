@@ -165,6 +165,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             PE_TradeCenter stockpileMarket = (PE_TradeCenter)message.TradingCenter;
             if (peer.ControlledAgent == null || peer.ControlledAgent.IsActive() == false) return false;
             if (peer.ControlledAgent.Position.Distance(stockpileMarket.GameEntity.GlobalPosition) > stockpileMarket.Distance) return false;
+            if (message.ItemIndex < 0 || message.ItemIndex >= stockpileMarket.MarketItems.Count) return false;   // the index comes from the client
             MarketItem marketItem = stockpileMarket.MarketItems[message.ItemIndex];
 
             if (!persistentEmpireRepresentative.GetInventory().IsInventoryIncludes(marketItem.Item, 1))
@@ -243,6 +244,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             if (peer.ControlledAgent == null || peer.ControlledAgent.IsActive() == false) return false;
             if (peer.ControlledAgent.Position.Distance(stockpileMarket.GameEntity.GlobalPosition) > stockpileMarket.Distance) return false;
 
+            if (message.ItemIndex < 0 || message.ItemIndex >= stockpileMarket.MarketItems.Count) return false;   // the index comes from the client
             MarketItem marketItem = stockpileMarket.MarketItems[message.ItemIndex];
             if (marketItem.Stock == 0)
             {

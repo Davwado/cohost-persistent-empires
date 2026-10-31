@@ -201,6 +201,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         {
             if (peer.ControlledAgent == null) return false;
             PE_CraftingStation craftingStation = (PE_CraftingStation)message.CraftingStation;
+            // the station and the recipe number come from the client
+            if (craftingStation == null || craftingStation.Craftables == null || message.CraftIndex < 0 || message.CraftIndex >= craftingStation.Craftables.Count) return false;
+            if (craftingStation.GameEntity.GetGlobalFrame().origin.Distance(peer.ControlledAgent.Position) > craftingStation.Distance + 2f) return false;
             Craftable requestedCraft = craftingStation.Craftables[message.CraftIndex];
             /* if(this.craftings.Values.ToList().Any(c => c != null && c.craftingStation.Id == craftingStation.Id))
             {
