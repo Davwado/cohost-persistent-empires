@@ -365,6 +365,16 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             return this.IsPlayerWounded(agent.MissionPeer.GetNetworkPeer());
         }
 
+        // At spawn the agent does not have its MissionPeer yet, so the overload above says "not wounded" and a freshly spawned
+        // wounded player ran at full speed until the next stat update (mounting, equipping). The caller passes the peer from the build data.
+        public bool IsAgentWounded(Agent agent, MissionPeer spawnPeer)
+        {
+            if (agent.MissionPeer != null) return this.IsAgentWounded(agent);
+            if (spawnPeer == null) return false;
+            var communicator = spawnPeer.GetNetworkPeer();
+            return communicator != null && this.IsPlayerWounded(communicator);
+        }
+
         public bool IsPlayerWounded(NetworkCommunicator player)
         {
             if (this.IsWounded.ContainsKey(player.VirtualPlayer?.ToPlayerId()) == false) return false;

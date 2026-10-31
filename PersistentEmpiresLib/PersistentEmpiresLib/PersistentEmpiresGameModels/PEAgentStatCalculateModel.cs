@@ -125,7 +125,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresGameModels
         }
         private AgentDrivenProperties InitializeAgentHumanStats(Agent agent, Equipment spawnEquipment, AgentDrivenProperties agentDrivenProperties, AgentBuildData agentBuildData)
         {
-            var isAgentWounded = WoundingBehavior.Instance.IsAgentWounded(agent);
+            var isAgentWounded = WoundingBehavior.Instance.IsAgentWounded(agent, agentBuildData?.AgentMissionPeer);
             if (isAgentWounded)
             {
                 ApplyWoundedAgentProperties(agent, agentDrivenProperties);
