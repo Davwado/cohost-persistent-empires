@@ -35,8 +35,10 @@ namespace PersistentEmpires.Views.Views.FactionManagement
             this._gauntletLayer = new GauntletLayer("PEFactionLordPoll", 24, false);
             this._gauntletLayer.LoadMovie("MultiplayerPollingProgress", this._dataSource);
             this._input.RegisterHotKeyCategory(HotKeyManager.GetCategory("PollHotkeyCategory"));
-            this._dataSource.AddKey(HotKeyManager.GetCategory("PollHotkeyCategory").GetGameKey(106));
-            this._dataSource.AddKey(HotKeyManager.GetCategory("PollHotkeyCategory").GetGameKey(107));
+            // The accept / decline keys are 108 / 109 in Bannerlord 1.4.8 (F10 / F11). The ids 106 / 107 this used are not registered keys, so
+            // pressing the keys did nothing: nobody could vote, and every lord poll ran out its 30 seconds and failed.
+            this._dataSource.AddKey(HotKeyManager.GetCategory("PollHotkeyCategory").GetGameKey(PollHotkeyCategory.AcceptPoll));
+            this._dataSource.AddKey(HotKeyManager.GetCategory("PollHotkeyCategory").GetGameKey(PollHotkeyCategory.DeclinePoll));
             base.MissionScreen.AddLayer(this._gauntletLayer);
         }
 
@@ -68,14 +70,14 @@ namespace PersistentEmpires.Views.Views.FactionManagement
             base.OnMissionScreenTick(dt);
             if (this._isActive)
             {
-                if (this._input.IsGameKeyPressed(106))
+                if (this._input.IsGameKeyPressed(PollHotkeyCategory.AcceptPoll))
                 {
                     this._isActive = false;
                     this._factionPollComponent.Vote(true);
                     this._dataSource.OnPollOptionPicked();
                     return;
                 }
-                if (this._input.IsGameKeyPressed(107))
+                if (this._input.IsGameKeyPressed(PollHotkeyCategory.DeclinePoll))
                 {
                     this._isActive = false;
                     this._factionPollComponent.Vote(false);
