@@ -7,8 +7,8 @@
 				<!--Description-->
 				<ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="6">
 					<Children>
-						<RichTextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="140" MarginLeft="0" Brush="PER.Log.Text" DoNotAcceptEvents="true" Text="@Date"/>
-						<RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="0" Brush="PER.Log.Text" DoNotAcceptEvents="true" Text="@Description"/>
+						<RichTextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="140" MarginLeft="0" Brush="GameMenu.Leaderboard.Entry.Name.Text" DoNotAcceptEvents="true" Text="@Date"/>
+						<RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="0" Brush="GameMenu.Leaderboard.Entry.Name.Text" DoNotAcceptEvents="true" Text="@Description"/>
 					</Children>
 				</ListPanel>
 			</Children>

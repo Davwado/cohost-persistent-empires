@@ -23,7 +23,7 @@
           <Children>
             <Widget MarginLeft="80" MarginRight="80" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
               <Children>
-                <Listpanel MarginTop="10" MarginBottom="10" WidthSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalBottomToTop" HeightSizePolicy="CoverChildren">
+                <ListPanel MarginTop="10" MarginBottom="10" WidthSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalBottomToTop" HeightSizePolicy="CoverChildren">
                   <Children>
                     <ScrollablePanel ClipRect="ClipContent" InnerPanel="ClipContent\FactionPanel" HorizontalScrollbar="..\HorizontalScrollbar" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
                       <Children>
@@ -50,7 +50,7 @@
                       </Children>
                     </ScrollbarWidget>
                   </Children>
-                </Listpanel>
+                </ListPanel>
               </Children>
             </Widget>
             <ListPanel StackLayout.LayoutMethod="HorizontalLeftToRight" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="100" MarginLeft="100" MarginRight="50">
@@ -64,7 +64,7 @@
                           <ItemTemplate>
                             <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginRight="15">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Text="@CastleName" Brush="Kingdom.SortButtons.Text" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Text="@CastleName" Brush="GameMenu.Leaderboard.Entry.Name.Text" />
                               </Children>
                             </Widget>
                           </ItemTemplate>

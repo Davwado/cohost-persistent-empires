@@ -327,6 +327,7 @@ namespace PersistentEmpiresLib.SceneScripts
         {
             if (!base.IsDisabled)
             {
+                Debug.Print("*PE* gate open: animating");
                 this.State = PE_NativeGate.GateState.Open;
                 int animationIndexAtChannel = this._doorSkeleton.GetAnimationIndexAtChannel(0);
                 float animationParameterAtChannel = this._doorSkeleton.GetAnimationParameterAtChannel(0);
@@ -349,6 +350,7 @@ namespace PersistentEmpiresLib.SceneScripts
         {
             if (!base.IsDisabled)
             {
+                Debug.Print("*PE* gate close: animating");
                 this.State = PE_NativeGate.GateState.Closed;
                 if (!this.AutoOpen)
                 {

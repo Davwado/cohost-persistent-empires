@@ -6,6 +6,13 @@
       <Style Name="Default" FontColor="#F3DCB8FF" TextBlur="0" TextOutlineAmount="0" TextGlowRadius="0" FontSize="27" />
     </Styles>
   </Brush>
+  <Brush Name="PESpawn.Credit">
+    <Layers>
+    </Layers>
+    <Styles>
+      <Style Name="Default" FontColor="#F3DCB8FF" TextBlur="0" TextOutlineAmount="0" TextGlowRadius="0" FontSize="20" />
+    </Styles>
+  </Brush>
   <Brush Name="PESpawn.PressFToSpawn">
     <Layers>
     </Layers>

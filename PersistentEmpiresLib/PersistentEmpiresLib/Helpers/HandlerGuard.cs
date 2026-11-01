@@ -7,6 +7,14 @@ using TaleWorlds.MountAndBlade.Network.Messages;
 
 namespace PersistentEmpiresLib.Helpers
 {
+    // Mission.CreateMissionObjectFromPrefab calls its last argument ("action applied before script initialization") without checking it for
+    // null, so passing null makes the server fault the moment it creates the object (a hard abort on Linux, not an exception). Every
+    // call in this mod passes this do-nothing action instead.
+    public static class PrefabHelper
+    {
+        public static readonly Action<TaleWorlds.Engine.GameEntity> NoInit = entity => { };
+    }
+
     // Wraps a network message handler so an exception in it is caught and reported (the dashboard's Errors tab) instead of
     // travelling back into the game's network code. Used on every handler registration:
     //     registerer.Register<SomeMessage>(HandlerGuard.Wrap<SomeMessage>(this.HandleSomeMessage));
@@ -18,6 +26,12 @@ namespace PersistentEmpiresLib.Helpers
         private static readonly ConditionalWeakTable<object, Dictionary<MethodInfo, Delegate>> ByTarget = new ConditionalWeakTable<object, Dictionary<MethodInfo, Delegate>>();
         private static readonly Dictionary<MethodInfo, Delegate> Statics = new Dictionary<MethodInfo, Delegate>();
         private static readonly object Gate = new object();
+
+        // The wrapper is generic code that the runtime compiles the first time a message of each type arrives, in the middle of a match.
+        // On the Linux server that compile has been crashing the process ("Invalid Program ... UnmanagedCallersOnly", always when the game
+        // invokes a network handler for the first time after a start). Wrapping is therefore OFF unless PE_HANDLER_GUARD=1; handlers then run
+        // exactly as the game registered them (an exception inside one is logged by the game's own invoke code).
+        private static readonly bool Enabled = Environment.GetEnvironmentVariable("PE_HANDLER_GUARD") == "1";
 
         private static TDelegate Cached<TDelegate>(Delegate original, Func<TDelegate> make) where TDelegate : class
         {
@@ -37,6 +51,7 @@ namespace PersistentEmpiresLib.Helpers
         // A message the server receives from a player.
         public static GameNetworkMessage.ClientMessageHandlerDelegate<T> Wrap<T>(GameNetworkMessage.ClientMessageHandlerDelegate<T> handler) where T : GameNetworkMessage
         {
+            if (!Enabled) return handler;
             return Cached<GameNetworkMessage.ClientMessageHandlerDelegate<T>>(handler, () => (peer, message) =>
             {
                 try
@@ -54,6 +69,7 @@ namespace PersistentEmpiresLib.Helpers
         // A message the client receives from the server.
         public static GameNetworkMessage.ServerMessageHandlerDelegate<T> Wrap<T>(GameNetworkMessage.ServerMessageHandlerDelegate<T> handler) where T : GameNetworkMessage
         {
+            if (!Enabled) return handler;
             return Cached<GameNetworkMessage.ServerMessageHandlerDelegate<T>>(handler, () => message =>
             {
                 try

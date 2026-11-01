@@ -12,6 +12,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.Network.Messages;
 
 namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 {
@@ -279,7 +280,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
                 playerInventory.EmptyInventory();
                 MatrixFrame frame = affectedAgent.Frame;
-                PE_InventoryEntity droppedLoot = (PE_InventoryEntity)base.Mission.CreateMissionObjectFromPrefab("pe_loot", frame, false, 0f, null);
+                PE_InventoryEntity droppedLoot = (PE_InventoryEntity)base.Mission.CreateMissionObjectFromPrefab("pe_loot", frame, false, 0f, PrefabHelper.NoInit);
                 lootInventory.TiedEntity = droppedLoot;
                 droppedLoot.InventoryId = lootInventory.InventoryId;
                 droppedLoot.InventoryName = "Loot " + player.UserName + "'s Body";
@@ -533,7 +534,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 Inventory lootInventory = new Inventory(0, 0, lootInventoryId);
                 lootInventory.IsConsumable = true;
                 MatrixFrame frame = player.ControlledAgent.Frame;
-                droppedLoot = (PE_InventoryEntity)base.Mission.CreateMissionObjectFromPrefab("pe_loot", frame, false, 0f, null);
+                droppedLoot = (PE_InventoryEntity)base.Mission.CreateMissionObjectFromPrefab("pe_loot", frame, false, 0f, PrefabHelper.NoInit);
                 droppedLoot.InventoryId = lootInventory.InventoryId;
                 droppedLoot.InventoryName = "Dropped Items";
                 droppedLoot.Slot = lootInventory.Slots.Count;
@@ -623,6 +624,8 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         }
 #endif
 #if SERVER
+        private GameNetworkMessage.ClientMessageHandlerDelegate<GameNetworkMessage> dropItemBaseHandler;   // one instance, so removing it later matches
+
         public void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode mode)
         {
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
@@ -631,7 +634,12 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             networkMessageHandlerRegisterer.Register<ClosedInventory>(HandlerGuard.Wrap<ClosedInventory>(this.HandleClosedInventoryFromClient));
             networkMessageHandlerRegisterer.Register<InventoryHotkey>(HandlerGuard.Wrap<InventoryHotkey>(this.HandleRequestInventoryHotkey));
             networkMessageHandlerRegisterer.Register<InventorySplitItem>(HandlerGuard.Wrap<InventorySplitItem>(this.HandleRequestSplit));
-            networkMessageHandlerRegisterer.Register<RequestDropItemFromInventory>(HandlerGuard.Wrap<RequestDropItemFromInventory>(this.HandleRequestDropItemFromInventory));
+            // Dropping an item crashed the server every time ("Fatal error. Invalid Program: attempted to call a UnmanagedCallersOnly method from
+            // managed code", inside Delegate.DynamicInvoke, which the game uses for ordinary handlers). A base handler is called as a plain
+            // delegate by the game, with no reflection, so this one is registered that way. The handler catches its own errors.
+            if (this.dropItemBaseHandler == null)
+                this.dropItemBaseHandler = (peer, message) => this.HandleRequestDropItemFromInventory(peer, (RequestDropItemFromInventory)message);
+            networkMessageHandlerRegisterer.RegisterBaseHandler<RequestDropItemFromInventory>(this.dropItemBaseHandler);
             networkMessageHandlerRegisterer.Register<RequestRevealItemBag>(HandlerGuard.Wrap<RequestRevealItemBag>(this.HandleRequestRevealItemBag));
         }
 

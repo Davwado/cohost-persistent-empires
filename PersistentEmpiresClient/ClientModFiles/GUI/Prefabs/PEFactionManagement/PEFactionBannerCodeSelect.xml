@@ -19,7 +19,7 @@
 				<Standard.Window Parameter.Title="Change Faction Banner">
 					<Children>
 						<!--Title-->
-						<Widget Id="InnerPanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="300" SuggestedWidth="573" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="0" PositionXOffset="23" PositionYOffset="0">
+						<Widget Id="InnerPanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="300" SuggestedWidth="573" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="0" PositionXOffset="23" PositionYOffset="0" ClipContents="true">
 							<Children>
 								<TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ClanNaming.DisabledReason.Text" Text="@BannerCode"/>
 							</Children>
@@ -48,7 +48,7 @@
 						</ListPanel>
 						<Widget Id="InnerPanel" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="573" HorizontalAlignment="Center" VerticalAlignment="Bottom" PositionXOffset="23" PositionYOffset="10">
 							<Children>
-								<TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="100" MarginTop="0" MarginLeft="10" MarginRight="10" Text="BannerCodeNotApplicable" Brush="ClanNaming.DisabledReason.Text" />
+								<TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="100" MarginTop="0" MarginLeft="10" MarginRight="10" Text="@BannerCodeNotApplicable" Brush="ClanNaming.DisabledReason.Text" />
 							</Children>
 						</Widget>
 

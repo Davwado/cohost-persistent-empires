@@ -229,45 +229,56 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 }
             }
         }
+        // Every way a poll request can end without a poll is logged, so "polling does nothing" can be traced to the line that refused it.
+        private static void PollLog(string text)
+        {
+            Debug.Print("*PE* poll: " + text);
+        }
+
         public void OpenLordPollServer(NetworkCommunicator pollCreatorPeer, NetworkCommunicator targetPeer)
         {
+            PollLog("request from " + (pollCreatorPeer == null ? "(none)" : pollCreatorPeer.UserName) + " for " + (targetPeer == null ? "(none)" : targetPeer.UserName));
             if(!LordPollEnabled)
             {
+                PollLog("refused: lord polls are disabled (LordPollEnabled)");
                 _informationComponent.SendAnnouncementToPlayer(GameTexts.FindText("FactionPollComponent1", null).ToString(), pollCreatorPeer, Colors.Red.ToUnsignedInteger());
                 return;
             }
 
             if (pollCreatorPeer == null)
             {
-                // Reject return
+                PollLog("refused: no poll creator");
                 return;
             }
             if (targetPeer == null)
             {
+                PollLog("refused: no target player");
                 this._informationComponent.SendAnnouncementToPlayer(GameTexts.FindText("FactionPollComponent2", null).ToString(), pollCreatorPeer, Colors.Red.ToUnsignedInteger());
                 return;
             }
             if (!pollCreatorPeer.IsConnectionActive)
             {
-                // Reject return
+                PollLog("refused: the creator is not connected");
                 return;
             }
             if (!targetPeer.IsConnectionActive)
             {
+                PollLog("refused: the target is not connected");
                 this._informationComponent.SendAnnouncementToPlayer(GameTexts.FindText("FactionPollComponent3", null).ToString(), pollCreatorPeer, Colors.Red.ToUnsignedInteger());
                 return;
             }
             MissionPeer creatorMPeer = pollCreatorPeer.GetComponent<MissionPeer>();
             MissionPeer targetMPeer = pollCreatorPeer.GetComponent<MissionPeer>();
-            if (creatorMPeer == null || targetMPeer == null) return;
-            if (targetPeer.IsSynchronized == false || pollCreatorPeer.IsSynchronized == false) return;
+            if (creatorMPeer == null || targetMPeer == null) { PollLog("refused: creator has no MissionPeer"); return; }
+            if (targetPeer.IsSynchronized == false || pollCreatorPeer.IsSynchronized == false) { PollLog("refused: a player is not synchronized yet"); return; }
             PersistentEmpireRepresentative targetRepresentative = targetPeer.GetComponent<PersistentEmpireRepresentative>();
             PersistentEmpireRepresentative pollCreatorRepresentative = pollCreatorPeer.GetComponent<PersistentEmpireRepresentative>();
-            if (targetRepresentative == null || pollCreatorRepresentative == null) return;
+            if (targetRepresentative == null || pollCreatorRepresentative == null) { PollLog("refused: a player has no representative"); return; }
 
             Faction f = targetRepresentative.GetFaction();
             // Nominating yourself is only refused while the faction still has a lord. A faction whose lord left has nobody else who
             // could be asked to start the poll for a lone member, so it could never get a lord again.
+            if (f == null) { PollLog("refused: the target has no faction"); return; }
             if (pollCreatorPeer.Index == targetPeer.Index && !string.IsNullOrEmpty(f.lordId) && f.lordId != targetPeer.VirtualPlayer.ToPlayerId() && targetRepresentative.IsAdmin == false)
             {
                 InformationComponent.Instance.SendMessage(GameTexts.FindText("FactionPollComponent4", null).ToString(), Color.ConvertStringToColor("#d32f2fff").ToUnsignedInteger(), pollCreatorPeer);
@@ -312,8 +323,9 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                     return;
                 }
             }
-            if (!pollCreatorRepresentative.ReduceIfHaveEnoughGold(LordPollRequiredGold)) return;
+            if (!pollCreatorRepresentative.ReduceIfHaveEnoughGold(LordPollRequiredGold)) { PollLog("refused: could not take the poll fee"); return; }
             this.OpenLordPoll(targetPeer, pollCreatorPeer);
+            PollLog("opened for faction " + targetRepresentative.GetFactionIndex() + ", " + this._ongoingPolls[targetRepresentative.GetFactionIndex()].ParticipantsToVote.Count + " voters");
             foreach (NetworkCommunicator player in this._ongoingPolls[targetRepresentative.GetFactionIndex()].ParticipantsToVote)
             {
                 GameNetwork.BeginModuleEventAsServer(player);
@@ -388,8 +400,10 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
         private void ApplyVote(NetworkCommunicator peer, bool accepted)
         {
             PersistentEmpireRepresentative persistentEmpireRepresentative = peer.GetComponent<PersistentEmpireRepresentative>();
-            if (this._ongoingPolls.ContainsKey(persistentEmpireRepresentative.GetFactionIndex()) == false) return;
-            if (this._ongoingPolls[persistentEmpireRepresentative.GetFactionIndex()].ApplyVote(peer, accepted) == false) return;
+            if (persistentEmpireRepresentative == null) return;   // the vote comes from a client
+            if (this._ongoingPolls.ContainsKey(persistentEmpireRepresentative.GetFactionIndex()) == false) { PollLog("vote from " + peer.UserName + " ignored: no poll open for their faction"); return; }
+            if (this._ongoingPolls[persistentEmpireRepresentative.GetFactionIndex()].ApplyVote(peer, accepted) == false) { PollLog("vote from " + peer.UserName + " ignored: not a voter in this poll (already voted or not a member)"); return; }
+            PollLog("vote from " + peer.UserName + ": " + (accepted ? "accept" : "decline"));
             FactionPoll ongoingPoll = this._ongoingPolls[persistentEmpireRepresentative.GetFactionIndex()];
             List<NetworkCommunicator> pollProgressReceivers = ongoingPoll.GetPollProgressReceivers();
             int count = pollProgressReceivers.Count;
@@ -462,6 +476,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
                 flag = false;
             }
 
+            PollLog("closed for faction " + ongoingPoll.FactionIndex + ": " + ongoingPoll.AcceptedCount + " accept, " + ongoingPoll.RejectedCount + " decline, result " + (flag ? "accepted" : "rejected"));
             GameNetwork.BeginBroadcastModuleEvent();
             GameNetwork.WriteMessage(new FactionLordPollClosed(ongoingPoll.TargetPlayer, flag, ongoingPoll.FactionIndex));
             GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None, null);

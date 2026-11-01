@@ -16,8 +16,10 @@
 
         <!--Done Button-->
 
-        <Standard.PopupCloseButton HorizontalAlignment="Center" Command.Click="OnApply" VerticalAlignment="Center" PositionXOffset="-160" MarginTop="585" Parameter.ButtonText="@ButtonText" IsEnabled="@CanApply" />
-        <Standard.PopupCloseButton HorizontalAlignment="Center" Command.Click="OnCancel" VerticalAlignment="Center" MarginTop="585" PositionXOffset="160" Parameter.ButtonText="Go Back" />
+        <!-- Bannerlord 1.4.8's Standard.PopupCloseButton wires its click from Parameter.ButtonAction (and its enabled state from Parameter.IsEnabled);
+             a Command.Click on the instance itself lands on a wrapper widget that is not a button, so these two buttons did nothing. -->
+        <Standard.PopupCloseButton HorizontalAlignment="Center" Parameter.ButtonAction="OnApply" VerticalAlignment="Center" PositionXOffset="-160" MarginTop="585" Parameter.ButtonText="@ButtonText" Parameter.IsEnabled="@CanApply" />
+        <Standard.PopupCloseButton HorizontalAlignment="Center" Parameter.ButtonAction="OnCancel" VerticalAlignment="Center" MarginTop="585" PositionXOffset="160" Parameter.ButtonText="Go Back" />
         <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="655" SuggestedHeight="555" HorizontalAlignment="Center" VerticalAlignment="Center" MarginBottom="6" Brush="GameMenu.Tournament.Frame" DoNotAcceptEvents="true">
           <Children>
 
@@ -84,7 +86,7 @@
         <!--Top Panel Name Text-->
         <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="592" SuggestedHeight="161" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="-336" Sprite="StdAssets\tabbar_popup" VerticalFlip="true" IsDisabled="true">
           <Children>
-            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="35" VerticalAlignment="Center" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="40" IsDisabled="true" Text="@Title" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="35" VerticalAlignment="Center" Brush="Popup.Title.Text" Brush.FontSize="40" IsDisabled="true" Text="@Title" />
           </Children>
         </Widget>
 

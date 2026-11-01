@@ -17,6 +17,7 @@
 
           <Children>
             <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="40" Brush="MPTeamSelection.HeaderText" Text="Welcome To Persistent Empires"/>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="150" Brush="PESpawn.Credit" Text="Updated for Bannerlord 1.4.8 by Davwado and Coalition Hosting (cohost.au)"/>
             <TextWidget WidthSizePolicy="Fixed" SuggestedWidth="632" HeightSizePolicy="Fixed" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="240" Brush="PESpawn.Hint" Text="Persistent Empires is a roleplay module created by the Avrasia Developer Team. In this mod, you create your own character and ride into the dangerous lands! There are many things you can do, such as making wine from grapes, bread from wheat and weapons from iron and wood. Fight for your Empire’s glory! By playing in this mod you accept our privacy policy."/>
             <TextWidget WidthSizePolicy="Fixed" SuggestedWidth="632" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="100" Brush="PESpawn.PressFToSpawn" Text="@ActionMessage"/>
             <Widget ClipContents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="533" MarginLeft="60" MarginRight="60" VerticalAlignment="Bottom">

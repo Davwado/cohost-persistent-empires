@@ -108,16 +108,21 @@ namespace PersistentEmpiresLib.SceneScripts
         }
         public void OpenDoor()
         {
+            Debug.Print("*PE* door open: moving");
             base.SetFrameSynchedOverTime(ref this.openFrame, this.Duration);
             this.isOpen = true;
+            Debug.Print("*PE* door open: sound");
             Mission.Current.MakeSound(SoundEvent.GetEventIdFromString("event:/mission/movement/foley/door_open"), base.GameEntity.GetGlobalFrame().origin, false, true, -1, -1);
+            Debug.Print("*PE* door open: done");
         }
         public void CloseDoor()
         {
+            Debug.Print("*PE* door close: moving");
             base.SetFrameSynchedOverTime(ref this.closedFrame, this.Duration);
             this.isOpen = false;
+            Debug.Print("*PE* door close: sound");
             Mission.Current.MakeSound(SoundEvent.GetEventIdFromString("event:/mission/movement/foley/door_close"), base.GameEntity.GetGlobalFrame().origin, false, true, -1, -1);
-
+            Debug.Print("*PE* door close: done");
         }
 
         protected override bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)

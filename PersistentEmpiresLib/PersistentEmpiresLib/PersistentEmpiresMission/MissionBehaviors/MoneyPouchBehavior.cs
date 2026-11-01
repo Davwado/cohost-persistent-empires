@@ -9,6 +9,7 @@ using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.Network.Messages;
 
 namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 {
@@ -39,12 +40,22 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
             base.OnRemoveBehavior();
             this.AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode.Remove);
         }
+        private GameNetworkMessage.ClientMessageHandlerDelegate<GameNetworkMessage> dropMoneyBaseHandler;   // one instance, so removing it later matches
+
         public void AddRemoveMessageHandlers(GameNetwork.NetworkMessageHandlerRegisterer.RegisterMode mode)
         {
             GameNetwork.NetworkMessageHandlerRegisterer networkMessageHandlerRegisterer = new GameNetwork.NetworkMessageHandlerRegisterer(mode);
             if (GameNetwork.IsServer)
             {
-                networkMessageHandlerRegisterer.Register<RequestDropMoney>(HandlerGuard.Wrap<RequestDropMoney>(this.HandleRequestDropMoney));
+                // Registered as a base handler: the game calls those as plain delegates, not through Delegate.DynamicInvoke, which crashes the
+                // server for the item and money drop handlers ("Invalid Program ... UnmanagedCallersOnly"). Errors are reported here.
+                if (this.dropMoneyBaseHandler == null)
+                    this.dropMoneyBaseHandler = (peer, message) =>
+                    {
+                        try { return this.HandleRequestDropMoney(peer, (RequestDropMoney)message); }
+                        catch (Exception ex) { ErrorGuard.Report("handling RequestDropMoney", peer, ex); return false; }
+                    };
+                networkMessageHandlerRegisterer.RegisterBaseHandler<RequestDropMoney>(this.dropMoneyBaseHandler);
                 networkMessageHandlerRegisterer.Register<RequestRevealMoneyPouch>(HandlerGuard.Wrap<RequestRevealMoneyPouch>(this.HandleRequestRevealMoneyPouch));
             }
             if (GameNetwork.IsClient)
@@ -128,7 +139,7 @@ namespace PersistentEmpiresLib.PersistentEmpiresMission.MissionBehaviors
 
         private void DropMoney(MatrixFrame frame, int amount)
         {
-            PE_MoneyBag moneyBag = (PE_MoneyBag)base.Mission.CreateMissionObjectFromPrefab("pe_moneybag", frame, false, 0f, null);
+            PE_MoneyBag moneyBag = (PE_MoneyBag)base.Mission.CreateMissionObjectFromPrefab("pe_moneybag", frame, false, 0f, PrefabHelper.NoInit);
             this.MoneyBagCreatedAt[moneyBag] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             moneyBag.SetAmount(amount);
 
