@@ -162,7 +162,7 @@ namespace PersistentEmpiresLib.SceneScripts
 
             MatrixFrame adjSpawnFrame = new MatrixFrame(spawnFrame.rotation, vecspawnFrame);
 
-            MissionObject mObject = Mission.Current.CreateMissionObjectFromPrefab(spawnableItem.PrefabName, adjSpawnFrame, false, 0f, null);
+            MissionObject mObject = Mission.Current.CreateMissionObjectFromPrefab(spawnableItem.PrefabName, adjSpawnFrame, false, 0f, PersistentEmpiresLib.Helpers.PrefabHelper.NoInit);
 
             this.SpawnedPrefabs.Add(mObject.GameEntity.ToGE());
 
