@@ -52,7 +52,7 @@ for /l %%i in (1,1,%NLIB%) do if not defined GAME if exist "!LIB%%i!\steamapps\c
 if defined STEAM if not defined GAME call :fail "Bannerlord was not found in your Steam libraries. Install Bannerlord from Steam, then run this again."
 if defined GAME call :getver "!GAME!\Modules\Native\SubModule.xml" GAMEVER
 if defined GAME (
-    if /i "!GAMEVER!"=="%WANT%" (call :ok "Bannerlord found: !GAME!   [version !GAMEVER!]") else call :warn "Bannerlord found [version !GAMEVER!] but this mod is built for %WANT%. In Steam: Bannerlord, Properties, Betas, choose the public branch."
+    if /i "!GAMEVER!"=="%WANT%" (call :ok "Bannerlord found: !GAME!   [version !GAMEVER!]") else call :warn "Bannerlord found [version !GAMEVER!] but this mod is built for %WANT%. Bannerlord has moved on and this mod is not ported yet. In Steam: Bannerlord, Properties, Betas, choose v1.4.8."
 )
 
 rem ---- the original Persistent Empires, and the Workshop version of CoHost
@@ -157,8 +157,14 @@ goto :again
 :do_verify
 echo.
 if defined GH goto :verify_go
-if defined WS (echo  [ -- ] You use the Workshop version, which Steam manages. In Steam you can right-click Bannerlord, Properties, Installed Files, Verify. & goto :again)
+if defined WS goto :verify_ws
 echo  [ -- ] The GitHub version is not installed, so there is nothing to check. Choose 1 first.
+goto :again
+:verify_ws
+echo  You use the Workshop version, which Steam manages. To check its files in Steam: right-click Bannerlord, Properties, Installed Files, Verify.
+echo  Checking what is ticked in the Bannerlord launcher:
+set "COHOST_GAME=!GAME!"
+call :runps Install-Module.ps1 -Launcher
 goto :again
 :verify_go
 set "COHOST_GAME=!GAME!"

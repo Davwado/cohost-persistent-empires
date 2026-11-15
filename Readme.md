@@ -27,7 +27,7 @@ Each server decides its own rules, so details such as wounding time or prices va
 
 ## Installation
 
-You need Windows, Bannerlord **1.4.8** (the public branch) and the original **Persistent Empires** Workshop item. This mod uses
+You need Windows, Bannerlord **1.4.8** (Bannerlord has moved on to 1.5.7, which this mod does not support yet: in Steam choose Properties, Betas, **v1.4.8**) and the original **Persistent Empires** Workshop item. This mod uses
 that item's game assets and installs next to it as a separate module.
 
 **Using the Steam Workshop version?** Then you do not need any of this: Steam installs and updates it. This is for the GitHub
@@ -64,6 +64,10 @@ run. Windows may warn about files from the internet: right-click the zip, **Prop
 each zip is in its release notes. Details: [PLAYERS.md](PLAYERS.md).
 
 ## Reporting problems
+
+If the game stops at start-up with *"... submodule could not be loaded due to a missing or conflicting dependency"*, the most common cause is
+the original Persistent Empires being ticked in the launcher together with CoHost (untick it). Choose 3 in the installer to find the cause;
+the other causes are listed in [PLAYERS.md](PLAYERS.md).
 
 Join the [Discord](https://discord.gg/X3g7GrBZjv). For a crash or an error message, attach
 `%ProgramData%\Mount and Blade II Bannerlord\logs\CoHostPE_exceptions.txt`.

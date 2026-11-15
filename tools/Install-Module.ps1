@@ -27,6 +27,7 @@ param(
     [switch]$Remove,
     [switch]$Check,
     [switch]$Verify,
+    [switch]$Launcher,      # only check which mods are ticked in the Bannerlord launcher (useful for the Workshop version too)
     [switch]$Yes
 )
 
@@ -117,8 +118,45 @@ function Find-Assets {
     return ""
 }
 
+function Get-OwnFiles($path) {      # every file under $path, but never through a link into the original item
+    foreach ($i in Get-ChildItem -LiteralPath $path -Force) {
+        if ($i.PSIsContainer) { if (-not ($i.Attributes -band [IO.FileAttributes]::ReparsePoint)) { Get-OwnFiles $i.FullName } }
+        else { $i }
+    }
+}
+function Test-Blocked($file) { return [bool](Get-Item -LiteralPath $file -Stream Zone.Identifier -ErrorAction SilentlyContinue) }
+function Get-LauncherSelection {    # the Multiplayer tab of the launcher: Id -> ticked. $null if the launcher file cannot be read.
+    $p = $env:COHOST_LAUNCHERDATA
+    if (-not $p) { $p = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "Mount and Blade II Bannerlord\Configs\LauncherData.xml" }
+    if (-not (Test-Path -LiteralPath $p)) { return $null }
+    try { $x = [xml](Get-Content -LiteralPath $p -Raw) } catch { return $null }
+    $h = @{}
+    foreach ($m in $x.UserData.MultiplayerData.ModDatas.UserModData) { $h[[string]$m.Id] = ([string]$m.IsSelected -eq "true") }
+    return $h
+}
+# The original mod has the same module code under the same file names, so the game cannot load both: it stops at start-up with
+# '"CoHost Persistent Empires.PersistentEmpiresLib" submodule could not be loaded due to a missing or conflicting dependency'.
+function Show-LauncherCheck {
+    $sel = Get-LauncherSelection
+    if ($null -eq $sel) { Say "  [INFO] The launcher's selection could not be read. In the launcher choose Multiplayer and tick Native, Multiplayer and CoHost Persistent Empires (not the original)."; return 0 }
+    $bad = 0
+    if ($sel["PersistentEmpires"] -and $sel["CoHostPersistentEmpires"]) {
+        Say "  [FAIL] In the launcher the original Persistent Empires is ticked together with CoHost Persistent Empires. They contain the same code, so the game stops with 'PersistentEmpiresLib could not be loaded due to a missing or conflicting dependency'. Untick the original one (Multiplayer tab)." "Red"; $bad = 1
+    }
+    elseif ($sel["PersistentEmpires"]) { Say "  [WARN] The original Persistent Empires is ticked in the launcher. Servers running CoHost need CoHost, not the original: untick it and tick CoHost Persistent Empires." "Yellow" }
+    if ($sel["CoHostPersistentEmpires"]) { if (-not $sel["PersistentEmpires"]) { Say "  [ OK ] In the launcher, CoHost Persistent Empires is ticked and the original is not" "Green" } }
+    else { Say "  [WARN] CoHost Persistent Empires is not ticked in the launcher (Multiplayer tab)." "Yellow" }
+    return $bad
+}
+
 try {
-    Say "---- $(if ($Verify) { 'verify' } elseif ($Remove) { 'remove' } elseif ($Check) { 'check' } else { 'install' }) ----"
+    Say "---- $(if ($Launcher) { 'launcher check' } elseif ($Verify) { 'verify' } elseif ($Remove) { 'remove' } elseif ($Check) { 'check' } else { 'install' }) ----"
+    if ($Launcher) {
+        Say "Checking which mods are ticked in the Bannerlord launcher."
+        $n = Show-LauncherCheck
+        Say "Log: $LogFile"
+        if ($n -gt 0) { exit 1 } else { return }
+    }
     if (-not $GameDir) { $GameDir = Find-Game }
     if (-not $GameDir) { throw "Could not find Bannerlord. Make sure it is installed through Steam, or run this again with -GameDir <folder that contains bin and Modules>." }
     $dest = Join-Path $GameDir "Modules\$ModuleName"
@@ -132,7 +170,7 @@ try {
         function Bad($t)  { Say "  [FAIL] $t" "Red"; $script:problems++ }
         Say "Checking the install of CoHost Persistent Empires."
         Pass "Bannerlord found: $GameDir"
-        if ($gameVersion -eq $GameVersionWanted) { Pass "Game version is $gameVersion" } else { Warn "Game version is $gameVersion but this mod is built for $GameVersionWanted. Switch Bannerlord to the public branch (Steam > Bannerlord > Properties > Betas)." }
+        if ($gameVersion -eq $GameVersionWanted) { Pass "Game version is $gameVersion" } else { Warn "Game version is $gameVersion but this mod is built for $GameVersionWanted. Bannerlord has moved on and this mod is not ported yet. In Steam: Bannerlord > Properties > Betas > choose v1.4.8." }
         if (-not $AssetsFrom) { $AssetsFrom = Find-Assets }
         if ($AssetsFrom) { Pass "Original Persistent Empires Workshop item found: $AssetsFrom" } else { Bad "The original Persistent Empires Workshop item is not downloaded. Subscribe to it (item 2937242207), let Steam finish, then run Install again." }
         if (-not (Test-Path (Join-Path $dest "SubModule.xml"))) {
@@ -150,6 +188,9 @@ try {
                 elseif (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { Warn "$f is a copy, not a link. It works, but uses disk space; Install again to link it." }
                 else { Pass "$f is linked to the original item" }
             }
+            $blocked = @(Get-OwnFiles $dest | Where-Object { Test-Blocked $_.FullName })
+            if ($blocked.Count -eq 0) { Pass "None of the mod's files are marked as blocked by Windows" }
+            else { Bad ("{0} mod file(s) are marked by Windows as downloaded from the internet (for example {1}). Bannerlord refuses to load blocked DLLs, which gives the error 'could not be loaded due to a missing or conflicting dependency'. Run Install again: it unblocks them." -f $blocked.Count, (($blocked | Select-Object -First 2 | ForEach-Object Name) -join ", ")) }
             if (Test-Path (Join-Path $Source "SubModule.xml")) {
                 $want = Get-ModuleVersion $Source
                 if ($want -ne $have) { Warn "The files next to this script are version $want but the installed module is $have. Run Install again to update from them." }
@@ -170,7 +211,7 @@ try {
         $ws = Find-WorkshopCoHost
         if ($ws -and (Test-Path (Join-Path $dest "SubModule.xml"))) { Warn "You have two copies of this mod: the one in $dest and the Steam Workshop one ($ws). The game may list the module twice or load the wrong one. Keep one: unsubscribe from the Workshop item, or choose 4 in CoHost PE Mod Installer.bat." }
         elseif ($ws) { Say "  [INFO] CoHost Persistent Empires is installed from the Steam Workshop on this PC. Steam updates that copy itself; this installer is only for the GitHub version." }
-        Say "  [INFO] The launcher selection cannot be checked from here: in the launcher choose Multiplayer and tick Native, Multiplayer and CoHost Persistent Empires (not the original)."
+        $problems += Show-LauncherCheck
         if ($problems -eq 0) { Say "Everything checks out." "Green" } else { Say "$problems problem(s) found. The lines marked FAIL say how to fix them." "Red" }
         Say "Log: $LogFile"
         if ($problems -gt 0) { exit 1 } else { return }
@@ -212,7 +253,7 @@ try {
     Say "A record of what it did is written to $LogFile"
     Say ""
     if ($gameVersion -ne $GameVersionWanted) {
-        Say "Warning: Bannerlord is $gameVersion but this mod is built for $GameVersionWanted. Servers running the mod will refuse you and the game may not start." "Yellow"
+        Say "Warning: Bannerlord is $gameVersion but this mod is built for $GameVersionWanted. Servers running the mod will refuse you and the game may not start. In Steam: Bannerlord > Properties > Betas > choose v1.4.8." "Yellow"
     }
     if (Game-Running) { Say "Warning: Bannerlord looks like it is running. Close it first, or files may be locked." "Yellow" }
     $workshopCopy = Find-WorkshopCoHost
@@ -240,8 +281,18 @@ try {
     }
     Copy-Item (Join-Path $Source "*") $dest -Recurse -Force
     Say "  copied the mod's own files"
+    # Files from an internet download can carry Windows' "blocked" mark, and Bannerlord then refuses to load our DLLs ("could not be loaded due to a
+    # missing or conflicting dependency"). Only the mod's own files are unblocked, never anything inside the linked folders.
+    $srcRoot = (Resolve-Path -LiteralPath $Source).Path
+    $unblocked = 0
+    foreach ($f in $srcFiles) {
+        $t = Join-Path $dest ($f.FullName.Substring($srcRoot.Length).TrimStart("\"))
+        if ((Test-Path -LiteralPath $t) -and (Test-Blocked $t)) { Unblock-File -LiteralPath $t; $unblocked++ }
+    }
+    if ($unblocked -gt 0) { Say "  unblocked $unblocked files that Windows had marked as downloaded from the internet" }
     Say ""
     Say "Installed $dest" "Green"
+    [void](Show-LauncherCheck)
     Say "Next: in the launcher choose Multiplayer and tick Native, Multiplayer and CoHost Persistent Empires (not the original)."
     Say "Something wrong? Run CoHost PE Mod Installer.bat and choose 3. Uninstall: choose 4."
 }

@@ -9,7 +9,7 @@ download. If you have both, keep one (the setup file warns you).
 
 ## Install
 
-1. Be on the public Bannerlord branch (1.4.8). Close Bannerlord.
+1. Be on Bannerlord **v1.4.8**: Bannerlord has since updated to v1.5.7, which this mod does not support yet. In Steam: Bannerlord, Properties, Betas, choose v1.4.8 (Betas tab). Close Bannerlord.
 2. Download the latest `CoHostPersistentEmpires-<version>.zip` from the [Releases page](https://github.com/Davwado/cohost-persistent-empires/releases/latest).
    Right-click the zip, choose **Extract All** (do not run anything from inside the zip).
 3. Double-click **CoHost PE Mod Installer.bat**. It looks at your PC and shows what it found:
@@ -36,6 +36,24 @@ Run **CoHost PE Mod Installer.bat** again and choose:
   files are never touched.
 
 If you ask for help, paste `install-log.txt` (and `update-log.txt`, if it exists) from the folder you extracted.
+
+## The game stops at start-up: "could not be loaded due to a missing or conflicting dependency"
+
+This message (`"CoHost Persistent Empires.PersistentEmpiresLib" submodule could not be loaded ...`) means the game could not load the
+mod's DLLs. The usual causes, most likely first:
+
+1. **The original Persistent Empires is ticked in the launcher as well.** The original contains the same code under the same file names,
+   so the game cannot load both. In the launcher choose **Multiplayer** and tick only **Native, Multiplayer, CoHost Persistent Empires**.
+2. **Two copies of CoHost are installed** (the Steam Workshop one and the GitHub one). Keep one: unsubscribe from the Workshop item, or run
+   **CoHost PE Mod Installer.bat** and choose **4**.
+3. **Windows has marked the DLLs as blocked** because they came from an internet download. Run **CoHost PE Mod Installer.bat** and choose
+   **1** again: it unblocks the mod's files. (Extracting a zip you first unblocked, with right-click, Properties, Unblock, avoids it.)
+4. **Files are missing or damaged** (an interrupted extract, or antivirus removing a DLL). Run the installer and choose **3**: it checks
+   every file against the download.
+5. **Bannerlord is not on version 1.4.8.** Bannerlord has moved on to v1.5.7, which this mod does not support yet, and Steam updates it by itself. In Steam: Bannerlord, Properties, Betas, choose v1.4.8 (Steam then downloads the older version).
+
+Choose **3** in the installer: it checks causes 1 to 5 and says which one applies. For the Steam Workshop version it checks the launcher
+(cause 1) too. If it finds nothing, send the newest `rgl_log_*.txt` from `%ProgramData%\Mount and Blade II Bannerlord\logs` in the Discord.
 
 ## What the installer does (and does not do)
 
