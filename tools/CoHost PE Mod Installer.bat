@@ -15,7 +15,7 @@ rem  to override detection.
 rem ==============================================================================================================
 
 set "HERE=%~dp0"
-set "WANT=v1.4.8"
+set "WANT=v1.5.7"
 set "ORIGID=2937242207"
 set "COHOSTID=3827536748"
 set "BAD=0"
@@ -52,7 +52,7 @@ for /l %%i in (1,1,%NLIB%) do if not defined GAME if exist "!LIB%%i!\steamapps\c
 if defined STEAM if not defined GAME call :fail "Bannerlord was not found in your Steam libraries. Install Bannerlord from Steam, then run this again."
 if defined GAME call :getver "!GAME!\Modules\Native\SubModule.xml" GAMEVER
 if defined GAME (
-    if /i "!GAMEVER!"=="%WANT%" (call :ok "Bannerlord found: !GAME!   [version !GAMEVER!]") else call :warn "Bannerlord found [version !GAMEVER!] but this mod is built for %WANT%. Bannerlord has moved on and this mod is not ported yet. In Steam: Bannerlord, Properties, Betas, choose v1.4.8."
+    if /i "!GAMEVER!"=="%WANT%" (call :ok "Bannerlord found: !GAME!   [version !GAMEVER!]") else call :warn "Bannerlord found [version !GAMEVER!] but this mod is built for %WANT%. Update Bannerlord in Steam (this release is for v1.5.7; for v1.4.8 use the older release v1.9.2.0)."
 )
 
 rem ---- the original Persistent Empires, and the Workshop version of CoHost

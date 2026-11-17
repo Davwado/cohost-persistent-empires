@@ -168,7 +168,7 @@ namespace PersistentEmpiresLib.SceneScripts
                 }
             }
         }
-        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent descriptionAgent)
         {
             return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
         }

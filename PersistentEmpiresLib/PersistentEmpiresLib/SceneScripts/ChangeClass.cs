@@ -109,7 +109,7 @@ namespace PersistentEmpiresLib.SceneScripts
         {
             return MBObjectManager.Instance.GetObjectTypeList<MultiplayerClassDivisions.MPHeroClass>().Select((value, index) => new { value, index }).First((a) => a.value.HeroCharacter.StringId == this.ClassId).index;
         }
-        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent descriptionAgent)
         {
             return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
         }

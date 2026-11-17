@@ -166,7 +166,7 @@ namespace PersistentEmpiresLib.SceneScripts
             this.LoadMarketItems(xmlDocument.SelectSingleNode("/Market/Tier4Items").InnerText, 4);
             this.LoadCraftingBoxes(xmlDocument.SelectSingleNode("/Market/CraftingBoxes").InnerText);
         }
-        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent descriptionAgent)
         {
             return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
         }

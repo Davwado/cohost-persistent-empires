@@ -43,7 +43,7 @@ if (-not $Source) {
 }
 if (-not $Source) { $Source = Join-Path $PSScriptRoot "CoHostPersistentEmpires" }
 $ModuleName = "CoHostPersistentEmpires"
-$GameVersionWanted = "v1.4.8"
+$GameVersionWanted = "v1.5.7"
 $LinkedFolders = @("AssetPackages", "ModuleSounds", "Prefabs", "SceneObj")   # big, read-only: linked from the original item
 $CopiedFolders = @("ModuleData", "GUI")                                      # small: copied, then our files go on top
 $LogDir = if ($env:COHOST_LOGDIR -and (Test-Path -LiteralPath $env:COHOST_LOGDIR)) { $env:COHOST_LOGDIR } else { $PSScriptRoot }
@@ -170,7 +170,7 @@ try {
         function Bad($t)  { Say "  [FAIL] $t" "Red"; $script:problems++ }
         Say "Checking the install of CoHost Persistent Empires."
         Pass "Bannerlord found: $GameDir"
-        if ($gameVersion -eq $GameVersionWanted) { Pass "Game version is $gameVersion" } else { Warn "Game version is $gameVersion but this mod is built for $GameVersionWanted. Bannerlord has moved on and this mod is not ported yet. In Steam: Bannerlord > Properties > Betas > choose v1.4.8." }
+        if ($gameVersion -eq $GameVersionWanted) { Pass "Game version is $gameVersion" } else { Warn "Game version is $gameVersion but this mod is built for $GameVersionWanted. Update Bannerlord in Steam (this release is for v1.5.7; for v1.4.8 use the older release v1.9.2.0)." }
         if (-not $AssetsFrom) { $AssetsFrom = Find-Assets }
         if ($AssetsFrom) { Pass "Original Persistent Empires Workshop item found: $AssetsFrom" } else { Bad "The original Persistent Empires Workshop item is not downloaded. Subscribe to it (item 2937242207), let Steam finish, then run Install again." }
         if (-not (Test-Path (Join-Path $dest "SubModule.xml"))) {
@@ -253,7 +253,7 @@ try {
     Say "A record of what it did is written to $LogFile"
     Say ""
     if ($gameVersion -ne $GameVersionWanted) {
-        Say "Warning: Bannerlord is $gameVersion but this mod is built for $GameVersionWanted. Servers running the mod will refuse you and the game may not start. In Steam: Bannerlord > Properties > Betas > choose v1.4.8." "Yellow"
+        Say "Warning: Bannerlord is $gameVersion but this mod is built for $GameVersionWanted. Servers running the mod will refuse you and the game may not start. Update Bannerlord in Steam (this release is for v1.5.7; for v1.4.8 use the older release v1.9.2.0)." "Yellow"
     }
     if (Game-Running) { Say "Warning: Bannerlord looks like it is running. Close it first, or files may be locked." "Yellow" }
     $workshopCopy = Find-WorkshopCoHost

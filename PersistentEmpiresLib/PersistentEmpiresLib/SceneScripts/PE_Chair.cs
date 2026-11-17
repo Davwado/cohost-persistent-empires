@@ -34,7 +34,7 @@ namespace PersistentEmpiresLib.SceneScripts
         }
 
         // Token: 0x060001C2 RID: 450 RVA: 0x0000C530 File Offset: 0x0000A730
-        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent descriptionAgent)
         {
             return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
         }

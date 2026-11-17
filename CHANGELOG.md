@@ -1,13 +1,22 @@
 # Changelog
 
-CoHost Persistent Empires for Bannerlord 1.4.8. Every release that changes the client gets its own version number, and an existing
+CoHost Persistent Empires for Bannerlord 1.5.7 (v1.9.x: 1.4.8). Every release that changes the client gets its own version number, and an existing
 version is never published again. Server-only fixes go out in the server image and are listed under "Server" with the version that was
 current when they shipped.
 
 Servers only accept clients on the same version: after an update, if a server says *"Not all players' modules match"*, you and the
 server are on different versions.
 
-## Next client release: v1.9.3.0
+## v1.10.0.0 (Bannerlord 1.5.7)
+
+**Players and servers**
+- Ported to Bannerlord 1.5.7 (game update of 15 Nov 2026). This version needs game 1.5.7; players still on 1.4.8 stay on v1.9.2.0.
+- Harmony upgraded to 2.3.3 (the old one aborts on the .NET 8 runtime the 1.5.7 server uses).
+- Server image runs both .NET 6 and .NET 8 and picks the one the game needs. New servers default the Game Branch variable to v1.5.7.
+
+Tested: builds, server boots with the module, all 12 Harmony patches apply, JIT warm-up clean. Not yet tested: a match load and a real 1.5.7 client joining.
+
+## Next client release: v1.10.1.0
 
 Nothing here yet.
 

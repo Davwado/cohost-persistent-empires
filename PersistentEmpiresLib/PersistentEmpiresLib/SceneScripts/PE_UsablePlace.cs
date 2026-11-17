@@ -7,7 +7,7 @@ namespace PersistentEmpiresLib.SceneScripts
     public class PE_UsablePlace : UsableMachine
     {
         // Token: 0x060001EA RID: 490 RVA: 0x0000D2D9 File Offset: 0x0000B4D9
-        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity)
+        public override TaleWorlds.Localization.TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent descriptionAgent)
         {
             return new TaleWorlds.Localization.TextObject(this.GetDescriptionTextLegacy(gameEntity) ?? string.Empty);
         }

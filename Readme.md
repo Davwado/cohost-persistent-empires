@@ -2,7 +2,7 @@
 
 ![CoHost Persistent Empires](images/banner.png)
 
-A multiplayer roleplay and strategy mod for **Mount & Blade II: Bannerlord 1.4.8**. You join a persistent medieval world on a
+A multiplayer roleplay and strategy mod for **Mount & Blade II: Bannerlord 1.5.7**. You join a persistent medieval world on a
 community server, pick a class, and play alongside everyone else: gather, craft, trade, build, form factions and fight wars.
 
 **[Download the latest release](../../releases/latest)** · [Discord](https://discord.gg/X3g7GrBZjv) · [Installation](#installation)
@@ -27,7 +27,7 @@ Each server decides its own rules, so details such as wounding time or prices va
 
 ## Installation
 
-You need Windows, Bannerlord **1.4.8** (Bannerlord has moved on to 1.5.7, which this mod does not support yet: in Steam choose Properties, Betas, **v1.4.8**) and the original **Persistent Empires** Workshop item. This mod uses
+You need Windows, Bannerlord **1.5.7** (release v1.9.2.0 is the one for 1.4.8) and the original **Persistent Empires** Workshop item. This mod uses
 that item's game assets and installs next to it as a separate module.
 
 **Using the Steam Workshop version?** Then you do not need any of this: Steam installs and updates it. This is for the GitHub
