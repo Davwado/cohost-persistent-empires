@@ -102,7 +102,7 @@ namespace PersistentEmpiresServer.ServerMissions
             // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
             // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
             if (!DiscordLogEnabled || string.IsNullOrEmpty(DiscordLogUrl)) return;
-            Task.Run(() =>
+            RunBackground(() =>
             {
                 if (!DiscordLogEnabled || string.IsNullOrEmpty(DiscordLogUrl))
                 {
@@ -175,7 +175,7 @@ namespace PersistentEmpiresServer.ServerMissions
             // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
             // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
             if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl)) return;
-            Task.Run(() =>
+            RunBackground(() =>
             {
                 if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl))
                 {
@@ -252,7 +252,7 @@ namespace PersistentEmpiresServer.ServerMissions
             // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
             // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
             if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl)) return;
-            Task.Run(() =>
+            RunBackground(() =>
             {
                 if (!DiscordExceptionEnabled || string.IsNullOrEmpty(DiscordExceptionUrl))
             {
@@ -291,7 +291,7 @@ namespace PersistentEmpiresServer.ServerMissions
             // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
             // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
             if (!DiscordServeStatusEnabled || string.IsNullOrEmpty(DiscordServeStatusUrl)) return;
-            Task.Run(() =>
+            RunBackground(() =>
             {
                 if (!DiscordServeStatusEnabled || string.IsNullOrEmpty(DiscordServeStatusUrl))
             {
@@ -325,7 +325,7 @@ namespace PersistentEmpiresServer.ServerMissions
             // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
             // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
             if (!DiscordAdminMessageEnabled || string.IsNullOrEmpty(DiscordAdminMessageUrl)) return;
-            Task.Run(() =>
+            RunBackground(() =>
             {
                 if (!DiscordAdminMessageEnabled || string.IsNullOrEmpty(DiscordAdminMessageUrl))
             {
@@ -360,7 +360,7 @@ namespace PersistentEmpiresServer.ServerMissions
             // Decided here on the calling thread: a pool thread that only returns still JIT-compiles the closure, and a JIT running
             // beside the game thread is the suspected cause of an "Invalid Program" abort seen while a player disconnected.
             if (!DiscordAnnounceEnabled || string.IsNullOrEmpty(DiscordAnnounceUrl)) return;
-            Task.Run(() =>
+            RunBackground(() =>
             {
                 if (!DiscordAnnounceEnabled || string.IsNullOrEmpty(DiscordAnnounceUrl))
             {
@@ -387,6 +387,44 @@ namespace PersistentEmpiresServer.ServerMissions
 
             Notify(request, DiscordAnnounceUrl);
             });
+        }
+
+        // Background work waits until the match has ticked. A pool thread compiling code beside the game thread while a match loads
+        // can abort the server through the game's MonoMod JIT hook (CLAUDE.md rule 6, docs/INCIDENTS.md). Messages raised earlier
+        // are kept (at most 50) and sent by StartBackground() on the first tick.
+        private static readonly object GateLock = new object();
+        private static readonly List<Action> Held = new List<Action>();
+        private static bool GateOpen = false;
+
+        private static void RunBackground(Action work)
+        {
+            lock (GateLock)
+            {
+                if (!GateOpen)
+                {
+                    if (Held.Count < 50) Held.Add(work);
+                    return;
+                }
+            }
+            Task.Run(work);
+        }
+
+        public static void StartBackground()
+        {
+            List<Action> now;
+            lock (GateLock)
+            {
+                if (GateOpen) return;
+                GateOpen = true;
+                now = new List<Action>(Held);
+                Held.Clear();
+            }
+            foreach (Action work in now) Task.Run(work);
+        }
+
+        public static void StopBackground()
+        {
+            lock (GateLock) { GateOpen = false; }
         }
 
         private static void Notify(object request, string url)

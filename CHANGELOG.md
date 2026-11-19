@@ -16,6 +16,10 @@ server are on different versions.
 
 Tested: builds, server boots with the module, all 12 Harmony patches apply, JIT warm-up clean. Not yet tested: a match load and a real 1.5.7 client joining.
 
+**Server (after v1.10.0.0, image only)**
+- **Server DLLs are now built against Bannerlord 1.5.7.** v1.10.0.0's were built against 1.4.8 by mistake, which made the server abort at match load (and would have on join and spawn). The JIT warm-up also covers all game assemblies and the save libraries now.
+- Discord messages and the dashboard/API listener now wait until the match's first tick instead of starting while the match loads. Aimed at the abort `Invalid Program: attempted to call a UnmanagedCallersOnly method` during match load (see docs/INCIDENTS.md). Not yet seen working on a live server.
+
 ## Next client release: v1.10.1.0
 
 Nothing here yet.
