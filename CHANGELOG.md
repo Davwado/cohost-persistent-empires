@@ -17,10 +17,20 @@ server are on different versions.
 Tested: builds, server boots with the module, all 12 Harmony patches apply, JIT warm-up clean. Not yet tested: a match load and a real 1.5.7 client joining.
 
 **Server (after v1.10.0.0, image only)**
+- **The 1.5.7 match-load abort is fixed** (`Invalid Program: attempted to call a UnmanagedCallersOnly method`): the game's dedicated-server component needs the game's `MultiplayerAdminComponent` in the mission, which this mod had left out. Seen working on a local run; not yet on the live host.
+- New servers download the module from the public GitHub repository, so a new server no longer fails with "could not read Username".
 - **Server DLLs are now built against Bannerlord 1.5.7.** v1.10.0.0's were built against 1.4.8 by mistake, which made the server abort at match load (and would have on join and spawn). The JIT warm-up also covers all game assemblies and the save libraries now.
 - Discord messages and the dashboard/API listener now wait until the match's first tick instead of starting while the match loads. Aimed at the abort `Invalid Program: attempted to call a UnmanagedCallersOnly method` during match load (see docs/INCIDENTS.md). Not yet seen working on a live server.
 
-## Next client release: v1.10.1.0
+## v1.10.1.0 (Bannerlord 1.5.7)
+
+**Players**
+- The welcome screen no longer draws the credits line over the first line of the text, and the credits say Bannerlord 1.5.7.
+
+**Server**
+- The server image carries this version (servers only accept clients on the same version). It includes the match-load abort fix listed under v1.10.0.0.
+
+## Next client release: v1.10.2.0
 
 Nothing here yet.
 
